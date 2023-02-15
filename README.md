@@ -15,3 +15,8 @@ Requirements
 12. You should know the exception guarantees you make (Please specify them (within your danger log).
 13. You should setup docker for submission, per the requirement
 14. You should provide testcases by the requirment!
+
+
+Resource
+--
+https://neat-iodine-05e.notion.site/ECE-568-Guide-1e5d5cfcfb694952acd74ae869f8cdd1
