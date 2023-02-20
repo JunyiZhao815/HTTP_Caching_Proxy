@@ -3,6 +3,27 @@
 void HttpParserTest::onRun() {
   test_parse_request();
   test_parse_response();
+  test_equal_operator_request();
+}
+
+void HttpParserTest::test_equal_operator_request() {
+  std::string request_msg =
+      "GET /hello.htm HTTP/1.1\r\n"
+      "User-Agent: Mozilla/4.0 (compatible; MSIE5.01; Windows NT)\r\n"
+      "Host: www.tutorialspoint.com\r\n"
+      "Accept-Language: en-us\r\n"
+      "Accept-Encoding: gzip, deflate\r\n"
+      "Connection: Keep-Alive\r\n"
+      "\r\n";
+  HttpParser parser_1;
+  Request *request_1 =
+      parser_1.parseRequest(request_msg.c_str(), request_msg.length());
+
+  HttpParser parser_2;
+  Request *request_2 =
+      parser_2.parseRequest(request_msg.c_str(), request_msg.length());
+  assert(request_1 != request_2);
+  assert(*request_1 == *request_2);
 }
 
 void HttpParserTest::test_parse_request() {
@@ -90,5 +111,6 @@ void HttpParserTest::test_parse_response() {
     std::stringstream ss;
     ss << *res;
     assert(ss.str().length() == message.length());
+    assert(*res == *res);
   }
 }

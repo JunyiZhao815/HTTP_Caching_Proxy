@@ -2,6 +2,7 @@
 #define __HTTP_PARSER_H__
 #include "Request.h"
 #include "Response.h"
+#include <boost/algorithm/string.hpp>
 #include <boost/beast.hpp>
 #include <boost/beast/http.hpp>
 #include <vector>
@@ -31,6 +32,7 @@ private:
   void addToRemainParsed(const char *msg, const size_t len);
   /*
    * Collect header key-value from parsed message
+   * note key would be all transform to lower
    * @message request/response parsed message
    * @header result container
    */
@@ -42,7 +44,9 @@ private:
     for (iter = message.begin(); iter != message.end(); ++iter) {
       std::pair<std::string, std::string> name_value;
       ss << iter->name_string();
-      name_value.first = ss.str();
+      std::string name = ss.str();
+      boost::algorithm::to_lower(name); // tranform name to lower
+      name_value.first = name;
       ss.str("");
       ss << iter->value();
       name_value.second = ss.str();

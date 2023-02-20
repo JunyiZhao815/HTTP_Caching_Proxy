@@ -6,9 +6,16 @@
 
 class HttpMessage {
 protected:
-  const unsigned int version;
+  unsigned int version;
   std::map<std::string, std::string> header;
   std::string body;
+
+protected:
+  /*
+   * Check if header exist key as name
+   * @throw invalid_argument
+   */
+  void checkHasField(const std::string &name) const;
 
 public:
   HttpMessage(const unsigned int version,
@@ -21,20 +28,29 @@ public:
 
   std::string getVersion() const;
 
-  //For both request and response
-  std::string getCacheControl() const;
+  /*
+   * Get Cache-Control (cache-control) from header
+   * @throw invalid_argument
+   */
+  std::string getCacheControl();
 
-  //For both request and response
-  std::string getMaxAge() const;
+  /*
+   * Get max-age from header
+   * @throw invalid_argument
+   */
+  std::string getMaxAge();
 
-  //Only in response
-  std::string getExpires() const;
+  /*
+   * Transform http message to string
+   */
+  virtual std::string message2string() = 0;
 
-  //Only in response
-  std::string getLastModified() const;
+  /*
+   * Compare if two http message is equal (content is same)
+   */
+  bool operator==(HttpMessage &httpMessage);
 
-  //For response
-  std::string getDate() const;
+  virtual ~HttpMessage();
 };
 
 #endif

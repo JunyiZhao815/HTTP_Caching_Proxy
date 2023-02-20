@@ -21,3 +21,31 @@ std::string HttpMessage::getVersion() const {
   ss << "HTTP/" << major_version << "." << minor_version;
   return ss.str();
 }
+
+void HttpMessage::checkHasField(const std::string &name) const {
+  if (header.find(name) == header.end()) {
+    std::string errmsg = "No " + name + " field in head";
+    throw std::invalid_argument(errmsg);
+  }
+}
+
+std::string HttpMessage::getCacheControl() {
+  checkHasField("cache-control");
+  return header["cache-control"];
+}
+
+std::string HttpMessage::getMaxAge() {
+  checkHasField("max-age");
+  return header["max-age"];
+}
+
+bool HttpMessage::operator==(HttpMessage &httpMessage) {
+  std::string a = message2string();
+  std::string b = httpMessage.message2string();
+  if (a == b) {
+    return true;
+  }
+  return false;
+}
+
+HttpMessage::~HttpMessage() {}

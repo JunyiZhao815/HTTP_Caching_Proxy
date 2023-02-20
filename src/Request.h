@@ -5,8 +5,8 @@
 
 class Request : public HttpMessage {
 private:
-  const std::string method;
-  const std::string uri;
+  std::string method;
+  std::string uri;
 
 public:
   Request(const std::string &method, const std::string &uri,
@@ -20,6 +20,11 @@ public:
    * @return <ip, port>, if not specify then assume port = 80
    */
   std::pair<std::string, std::string> getHost();
+
+  /*
+   * Transform request to string
+   */
+  std::string message2string();
 };
 
 #endif

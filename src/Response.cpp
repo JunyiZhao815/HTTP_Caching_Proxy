@@ -20,3 +20,24 @@ std::ostream &operator<<(std::ostream &out, const Response response) {
   out << response.body;
   return out;
 }
+
+std::string Response::getExpires() {
+  checkHasField("expires");
+  return header["expires"];
+}
+
+std::string Response::getLastModified() {
+  checkHasField("last-modified");
+  return header["last-modified"];
+}
+
+std::string Response::getDate() {
+  checkHasField("date");
+  return header["date"];
+}
+
+std::string Response::message2string() {
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
+}

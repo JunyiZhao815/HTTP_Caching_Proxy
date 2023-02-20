@@ -19,7 +19,7 @@ std::ostream &operator<<(std::ostream &out, const Request request) {
 }
 
 std::pair<std::string, std::string> Request::getHost() {
-  std::string host = header["Host"];
+  std::string host = header["host"];
   std::pair<std::string, std::string> ip_port;
   size_t index = host.find(':');
   if (index == std::string::npos) {
@@ -31,4 +31,10 @@ std::pair<std::string, std::string> Request::getHost() {
     ip_port.second = host.substr(index + 1);
     return ip_port;
   }
+}
+
+std::string Request::message2string() {
+  std::stringstream ss;
+  ss << *this;
+  return ss.str();
 }

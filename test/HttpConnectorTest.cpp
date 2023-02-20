@@ -28,6 +28,12 @@ void HttpConnectorTest::test_simple_proxy(std::string port) {
   Response *response = httpConnector.receiveResponse();
   std::cout << "server response:\n";
   std::cout << *response << std::endl;
-  // send back response to client
+  //  send back response to client
   httpConnector.sendResponse(response);
+
+  delete request;
+  delete response;
+  close(s_fd);
+  close(c_fd);
+  close(fd);
 }

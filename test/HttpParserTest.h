@@ -7,6 +7,7 @@ class HttpParserTest : public UnitTest {
 private:
   void test_parse_request();
   void test_parse_response();
+  void test_equal_operator_request();
 
 public:
   void onRun() override;
