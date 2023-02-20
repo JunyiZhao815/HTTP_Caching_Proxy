@@ -4,6 +4,10 @@
 #include "../src/test/UnitTest.h"
 
 class HttpParserTest : public UnitTest {
+private:
+  void test_parse_request();
+  void test_parse_response();
+
 public:
   void onRun() override;
 };

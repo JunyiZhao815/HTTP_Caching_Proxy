@@ -4,13 +4,14 @@
 
 class Response : public HttpMessage {
 private:
-  const std::string method;
-  const std::string uri;
-  const std::string version;
+  const std::string status_code;
+  const std::string reason;
 
 public:
-  Response(const std::string &method, const std::string &uri,
-           const std::string &version,
+  Response(const unsigned int version, const std::string &status_code,
+           const std::string &reason,
            std::map<std::string, std::string> &header, std::string &body);
+
+  friend std::ostream &operator<<(std::ostream &out, const Response response);
 };
 #endif
