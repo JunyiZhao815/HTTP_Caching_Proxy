@@ -20,6 +20,16 @@ public:
   std::string header2string() const;
 
   std::string getVersion() const;
+
+  std::string getCacheControl() const;
+
+  std::string getMaxAge() const;
+
+  std::string getExpires() const;
+
+  std::string getLastModified() const;
+
+  std::string getDate() const;
 };
 
 #endif
