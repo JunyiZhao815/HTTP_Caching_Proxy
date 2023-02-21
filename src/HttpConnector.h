@@ -9,6 +9,15 @@ private:
   int server_socket_fd;
   TcpConnector tcpConnector;
 
+private:
+  /*
+   * Transport message without any parse, send forward directly
+   * @from_socket where to send
+   * @to_socket send to where
+   * @return length of message transported
+   */
+  size_t transportRawMessage(const int from_socket, const int to_socket);
+
 public:
   HttpConnector(const int c_fd);
   /*
@@ -34,6 +43,12 @@ public:
    * Send response back to client agent
    */
   void sendResponse(const Response *response);
+
+  /*
+   * Create tunnel between user and server,
+   * keep connection until one close socket
+   */
+  void tunnelTransport();
 };
 
 #endif

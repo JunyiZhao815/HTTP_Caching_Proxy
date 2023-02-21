@@ -25,6 +25,8 @@ public:
    * Transform request to string
    */
   std::string message2string();
+
+  std::string getMethod();
 };
 
 #endif

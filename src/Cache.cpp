@@ -167,6 +167,6 @@ bool check_last_modified(std::string last_modified, Response response){
 void usingCache(std::string request){
 
 }
-void revalidation(int client_fd, int server_fd, int user_id){
+void revalidation(int client_fd, int server_fd, int user_id, ){
 
 }
