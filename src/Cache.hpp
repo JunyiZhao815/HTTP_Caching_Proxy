@@ -5,16 +5,15 @@
 #include "Response.h"
 #include "TcpConnector.h"
 #include <vector>
+#include<iostream>
 
 class Node{
-    Request request;
-    Response response;
-    Node* prev;
-    Node* next;
-    Node(Request request, Response response){
-        this->request = request;
-        this->response= response;
-    }
+    public:
+        Request request;
+        Response response;
+        Node* prev;
+        Node* next;
+        Node(Request request, Response response):request(request), response(response){}
 };
 class Cache{
     private:
@@ -30,6 +29,6 @@ class Cache{
 
         Response Cache::getResponse(Request request);
         void putResponse(Request request, Response response);
-        bool isFresh(Request request, int user_id);
-
+        bool isFresh(Request request, std::ostream &out, int user_id);
+        void revalidation(int client_fd, int server_fd, int user_id, std::string request);
 };
