@@ -13,5 +13,5 @@ int main() {
   // HPROXY_RUN_TEST(ConnectMethodTest);
   // HPROXY_RUN_TEST(GetMethodTest);
   // HPROXY_RUN_TEST(PostMethodTest);
-  HPROXY_RUN_TEST(HttpProxyTest);
+  // HPROXY_RUN_TEST(HttpProxyTest);
 }

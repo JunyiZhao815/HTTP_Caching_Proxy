@@ -27,6 +27,8 @@ public:
   std::string message2string();
 
   std::string getMethod();
+
+  std::string getUrl();
 };
 
 #endif
