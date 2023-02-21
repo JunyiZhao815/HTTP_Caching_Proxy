@@ -12,7 +12,7 @@ public:
    * Connect method
    * @throw runtime_exception
    */
-  virtual void takeAction(HttpConnector &httpConnector);
+  virtual void takeAction(HttpConnector &httpConnector, Request& request);
 };
 
 #endif

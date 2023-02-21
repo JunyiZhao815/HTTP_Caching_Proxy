@@ -50,6 +50,21 @@ public:
    */
   bool operator==(HttpMessage &httpMessage);
 
+  /*
+   * Get field in header
+   * @name field name
+   * @return field value
+   * @throw invalid_argument
+   */
+  std::string getHeaderField(std::string name);
+
+  /*
+   * Check if header contain specific field
+   * @name field name
+   * @return true/false
+   */
+  bool doesHeaderHave(std::string name);
+
   virtual ~HttpMessage();
 };
 

@@ -1,6 +1,6 @@
 #include "ConnectMethod.h"
 
-void ConnectMethod::takeAction(HttpConnector &httpConnector) {
+void ConnectMethod::takeAction(HttpConnector &httpConnector, Request& request) {
   ResponseFactory factory;
 
   // send back 200 ok to client

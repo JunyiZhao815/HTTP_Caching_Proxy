@@ -38,3 +38,5 @@ std::string Request::message2string() {
   ss << *this;
   return ss.str();
 }
+
+std::string Request::getMethod() { return method; }

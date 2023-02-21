@@ -48,4 +48,16 @@ bool HttpMessage::operator==(HttpMessage &httpMessage) {
   return false;
 }
 
+std::string HttpMessage::getHeaderField(std::string name) {
+  checkHasField(name);
+  return header[name];
+}
+
 HttpMessage::~HttpMessage() {}
+
+bool HttpMessage::doesHeaderHave(std::string name) {
+  if (header.find(name) == header.end()) {
+    return false;
+  }
+  return true;
+}
