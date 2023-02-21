@@ -1,3 +1,4 @@
+#include "CacheTest.h"
 #include "ConnectMethodTest.h"
 #include "GetMethodTest.h"
 #include "HttpConnectorTest.h"
@@ -14,4 +15,5 @@ int main() {
   // HPROXY_RUN_TEST(GetMethodTest);
   // HPROXY_RUN_TEST(PostMethodTest);
   // HPROXY_RUN_TEST(HttpProxyTest);
+  HPROXY_RUN_TEST(CacheTest);
 }
