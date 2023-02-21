@@ -8,6 +8,12 @@ public:
    * Create response with 200 ok, no body
    */
   Response create_200_ok_response();
+
+  /*
+   * Create response with 4xx, reason, no body
+   */
+  Response create_4xx_response(const std::string &status_code,
+                               const std::string &reason);
 };
 
 #endif

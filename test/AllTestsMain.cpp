@@ -2,6 +2,7 @@
 #include "GetMethodTest.h"
 #include "HttpConnectorTest.h"
 #include "HttpParserTest.h"
+#include "HttpProxyTest.h"
 #include "PostMethodTest.h"
 #include "TcpConnectorTest.h"
 
@@ -12,4 +13,5 @@ int main() {
   // HPROXY_RUN_TEST(ConnectMethodTest);
   // HPROXY_RUN_TEST(GetMethodTest);
   // HPROXY_RUN_TEST(PostMethodTest);
+  HPROXY_RUN_TEST(HttpProxyTest);
 }
