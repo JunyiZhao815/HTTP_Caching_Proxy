@@ -9,15 +9,16 @@
 
 class Node{
     public:
-        Request request;
+        std::string URI;
         Response response;
         Node* prev;
         Node* next;
-        Node(Request request, Response response):request(request), response(response){}
+        Node(std::string URI, Response response):URI(URI), response(response){}
 };
 class Cache{
-    private:
+    public:
         // Here I use First In First Out(FIFO) to implement the replacement policy
+        std::map<std::string, Node*>map;
         size_t capacity;
         size_t size;
         Node* head;
@@ -26,9 +27,9 @@ class Cache{
             this->capacity = capacity;
             this->size = size;
         }
-
-        Response Cache::getResponse(Request request);
+        void usingCache(Request request, int user_id);
+        Response getResponse(Request request);
         void putResponse(Request request, Response response);
-        bool isFresh(Request request, std::ostream &out, int user_id);
-        void revalidation(int client_fd, int server_fd, int user_id, std::string request);
+        bool isFresh(Request request, Response response, std::ostream &out, int user_id);
+        void revalidation(int client_fd, int server_fd, int user_id);
 };

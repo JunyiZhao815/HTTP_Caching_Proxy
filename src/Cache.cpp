@@ -1,29 +1,26 @@
 #include "Cache.hpp"
-
-
+#include <fstream>
+#include <iostream>
+#include "HttpConnector.h"
+#include <algorithm>
+std::ofstream out("/var/log/erss/proxy.log");
 
 Response Cache::getResponse(Request request){
-    Node* pointer = head;
-    while(pointer != NULL){
-        if(pointer->request == request){
-            return pointer->response;
-        }
-    }
-    Response res = Response();
-    res.isNull = true;
-    return res;
+    std::string URI = request.getURI();
+    return map[URI]->response;
 }
 
 void Cache::putResponse(Request request, Response response){
     Node* pointer = head;
+    std::string URI = request.getURI();
     while(pointer != NULL){
-        if(pointer->request == request){
+        if(pointer->URI == URI){
             pointer->response = response;
             return;
         }
     }
     // Add Node to the end of linkedlist
-    Node* temp = new Node(request, response);       
+    Node* temp = new Node(URI, response);       
     if(size == 0){
         head = temp;
         tail = temp;
@@ -32,24 +29,66 @@ void Cache::putResponse(Request request, Response response){
         tail->next->prev = tail;
         tail = tail->next;
     }
-    ++size;
+    map[URI] = temp;
+    ++size; 
     // Delete the first Node if the size excceed the capacity
     if(this->size > capacity){
         Node* first = head;
+        map[first->URI] = NULL;
         head = head->next;
         if(head == NULL){
             tail = NULL;
         }else{
             head->prev = NULL;
         }
-        free(first);
         --size;
     }
 }
 
 
+int get_freshness_lifetime(std::string max_age, std::string expires, std::string last_modified, Request request, Response response){
+    if(max_age != ""){
+        return convert_string2timet(max_age);
+    }else if(expires != ""){
+        time_t expire_time = convert_string2timet(expires);
+        time_t response_time = convert_string2timet(response.getDate());
+        return expire_time - response_time;
+    }else if(last_modified != ""){
+        time_t last_modified_time = convert_string2timet(last_modified);
+        time_t date = convert_string2timet(response.getDate());
+        time_t heuristic_lifetime = difftime(date last_modified_time) / 10;
+        time_t current_age = get_current_age(request, response);
+        if(current_age > 24 * 60 * 60 && response.getWarning() == ""){
+            std::string new_header =  response.getHeader() + "\r\n" + "warn-code: 133" + "\r\n\r\n";
 
-bool Cache::isFresh(Request request, std::ostream &out, int user_id){
+        }
+        return heuristic_lifetime;
+    }
+}
+time_t convert_string2timet(std::string time){
+    size_t gmt = time.find("GMT");
+    if(gmt != std::string::npos){
+        time.erase(gmt-1, 4);
+    }
+    struct tm tm;
+    strptime(time.c_str(), "%a, %d %b %Y %H:%M:%S", &tm);
+    return mktime(&tm);
+}
+time_t get_current_age(Request request, Response response){
+    time_t age_value = atoi(response.getAge());
+    time_t date_value = convert_string2timet(response.getDate());
+    time_t now = time(NULL);
+    time_t request_time = convert_string2timet(request.getDate());
+    time_t response_time = convert_string2timet(response.getDate());
+    time_t apparent_age = response_time - date_value < 0? 0: response_time - date_value;
+    time_t response_delay = response_time - request_time;
+    time_t corrected_age_value = age_value + response_delay;
+    time_t corrected_initial_age = apparent_age > corrected_age_value? apparent_age: corrected_age_value;
+    time_t resident_time = now - response_time;
+    time_t current_age = corrected_initial_age + resident_time;
+    return current_age;
+}
+bool Cache::isFresh(Request request, Response response, std::ostream &out, int user_id){
     Response response_old = this->getResponse(request);
     if(response_old.isNull == true){
         std::cout << "Cannot find the response you are trying to check freshing or not" << std::endl;
@@ -61,112 +100,74 @@ bool Cache::isFresh(Request request, std::ostream &out, int user_id){
         std::string max_age = response_old.getMaxAge();
         std::string expires = response_old.getExpires();
         std::string last_modified = response_old.getLastModified();
-        if(max_age != ""){
-            check_max_age(max_age, response_old);
-        }else if(expires != ""){
-            check_expires(expires, response_old);
-        }else if(last_modified != ""){
-            check_last_modified(last_modified, response_old);
+        int freshness_lifetime = get_freshness_lifetime(max_age, expires, last_modified, request, response);
+        int current_age = get_current_age(request, response);
+        if(freshness_lifetime > current_age){
+            std::cout<<"it is fresh" << std::endl;
+            return true;
+        }else{
+            std::cout << "it is not fresh" << std::endl;
+            return false;
         }
-        std::cout << "it is not fresh" << std::endl;
-        return false;
     }
 }
 
 
 
-bool check_max_age(std::string max_age, Response response){
-    int int_max_age = stoi(max_age);
-    std::string date = response.getDate();
-    size_t gmt = date.find("GMT");
-    if(gmt != std::string::npos){
-        date.erase(gmt-1, 4);
-    }
-    struct tm tm;
-    strptime(date.c_str(), "%a, %d %b %Y %H:%M:%S", &tm);
-    time_t prev_age = mktime(&tm) - 18000;
+void Cache::revalidation(int client_fd, int server_fd, int user_id, Response response, Request request){
+    std::string etag=response.getEtag();
+    std::string lastModified=response.getLastModified();
+    //1. Sending a Validation Request
+    std::string header_request = request.getHeader();
+    TcpConnector tcp = TcpConnector();
+    if(etag != ""){
+        std::string new_header =  header_request + "\r\n" + "If-None-Match: " + etag + "\r\n\r\n";
+        send(client_fd, new_header.data(),new_header.size()+1,0);
+        //receive new response  
+        std::vector<char> vector(65536, 0);
+        int a = recv(client_fd, &vector.data()[0],vector.size(),0);
+        if(a == -1){
+            std::cerr << "Error: receive error" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        std::string isChunk = response.getTransferEncoding();
+        if(isChunk == "chunked"){
 
-    time_t curr_age = time(NULL);
-    // struct tm *curr = gmtime(&curr_age);
-    // const char *curr_time_act = asctime(curr);
-    // std::cout << "current time: " << curr_time_act << std::endl;
+        }else{
 
-    time_t expire_age = prev_age + int_max_age;
-    // struct tm *exp = gmtime(&expire_age);
-    // const char *expire_time_act = asctime(exp);
-    // std::cout << "expire time: " << expire_time_act << std::endl;
-    if(curr_age <= expire_age){
-        std::cout<<"it is fresh" << std::endl;
-        return true;
+        }
+
+
+
+        
+
+    }else if(lastModified != ""){
+        std::string new_header =  header_request + "\r\n" + "If-Modified-Since: " + lastModified + "\r\n\r\n";
+        tcp.sendMessage(client_fd, &new_header, sizeof(new_header));
     }else{
-        std::cout << "it is not fresh" << std::endl;
-        return false;
+        
     }
 }
+void check_etag_validation(std::string etag, int server_fd, int user_id, Request request, Response reponse){
+    out << user_id << ": NOTE ETag: " << etag << std::endl;
+    std::string header_request = request.getHeader();
+    std::string new_header =  header_request + "\r\n" + "If-None-Match: " + etag + "\r\n\r\n";
+    TcpConnector tcp = TcpConnector();
+    tcp.sendMessage(server_fd, &new_header, sizeof(new_header));
+    //std::vector<char>new_response(65536, 0);
+    std::string new_response;
+    recv(server_fd, &new_response, sizeof(new_response), MSG_WAITALL);
+    HttpParser httpParser;
+    size_t len;
+    Response* r = httpParser.parseResponse(const_cast<char*>(new_response.c_str()), len);
+    if(r->getStatusCode() == "304"){
+        // respond from cache
 
-bool check_expires(std::string expires, Response response){
-    struct tm tm;
-    size_t gmt = expires.find("GMT");
-    if (gmt != std::string::npos) {
-        expires.erase(gmt - 1, 4);
-    }
-    strptime(expires.c_str(), "%a, %d %b %Y %H:%M:%S", &tm);
-    time_t expire_time = mktime(&tm) - 18000;
-    // struct tm *exp = gmtime(&expire_time);
-    // const char *expire_time_act = asctime(exp);
-    time_t cur_time = time(NULL);
+    }else if(r->getStatusCode() == "200"){
 
-    if (cur_time <= expire_time) {
-        std::cout << "it is fresh" << std::endl;
-        return true;
-    } else {
-        // If it expires, then revalidate
-        std::cout << "it is not fresh" << std::endl;
-        return false;
-    }
-}
-
-bool check_last_modified(std::string last_modified, Response response){
-    std::string now_date = response.getDate();
-
-    struct tm tm_now_date;
-    size_t gmt = now_date.find("GMT");
-    if (gmt != std::string::npos) {
-        now_date.erase(gmt - 1, 4);
-    }
-    strptime(now_date.c_str(), "%a, %d %b %Y %H:%M:%S", &tm_now_date);
-    time_t date_age = mktime(&tm_now_date) - 18000;
-
-    struct tm tm_last_modified;
-    gmt = last_modified.find("GMT");
-    if (gmt != std::string::npos) {
-        last_modified.erase(gmt - 1, 4);
-    }
-    strptime(last_modified.c_str(), "%a, %d %b %Y %H:%M:%S", &tm_last_modified);
-    time_t last_age = mktime(&tm_last_modified) - 18000;
-
-    time_t cur_age = time(NULL);
-    time_t exp_age = cur_age + difftime(date_age, last_age) / 10;
-    // struct tm *exp = gmtime(&exp_age);
-    // const char *expire_time_act = asctime(exp);
-    double cur_diff = difftime(cur_age, date_age);
-
-    if (cur_diff <=  difftime(date_age, last_age) / 10) {
-        // no need to revalidate
-        std::cout << "it is fresh" << std::endl;
-        return true;
-    } else {
-        // need revalidate
-        std::cout << "it is not fresh" << std::endl;
-        return false;
     }
 
 }
-
-
-void usingCache(std::string request){
-
-}
-void revalidation(int client_fd, int server_fd, int user_id, ){
+void check_lastModified_validation(std::string etag, int server_fd, int user_id, Request request, Response reponse){
 
 }
