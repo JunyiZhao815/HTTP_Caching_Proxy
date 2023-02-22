@@ -73,6 +73,8 @@ public:
   std::string getMaxAge();
 
   std::string getDate();
+  
+  std::string HttpMessage::getFirstLine();
 
   virtual ~HttpMessage();
 };

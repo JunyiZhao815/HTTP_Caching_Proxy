@@ -12,6 +12,7 @@ Node* Cache::getResponse(Request request) {
 }
 
 void Cache::putResponse(Request request, Response response) {
+  pthread_mutex_lock(&mutex);
   Node *pointer = head;
   std::string URI = request.getURI();
   while (pointer != NULL) {
@@ -44,6 +45,7 @@ void Cache::putResponse(Request request, Response response) {
     }
     --size;
   }
+  pthread_mutex_unlock(&mutex);
 }
 
 int get_freshness_lifetime(std::string max_age, std::string expires,
@@ -144,7 +146,7 @@ void print_expire(int user_id, Response response){
     } else if (expires != "") {
         time_t expire_time = convert_string2timet(expires);
         struct tm *exp = gmtime(&expire_time);
-        const char *expire_time_act = asctime(exp);
+        const char*expire_time_act = asctime(exp);
         out << user_id << ": cached, expires at " << expire_time_act;
     } else if (last_modified != "") {
         time_t date_age = convert_string2timet(date);
@@ -193,13 +195,11 @@ void Cache::check_validation(Request request, Response response, int user_id, st
     respond_to_client(response, user_id);
 
   } else if (newResponse->getStatusCode() == "200") {
-    std::cout << "200" << std::endl;
+    std::cout << "cod = 200" << std::endl;
     //If the new response is cacheable
     if(newResponse->getCacheable() == "yes"){
-      pthread_mutex_lock(&mutex);
       //Update response
       putResponse(request, *newResponse);
-      pthread_mutex_unlock(&mutex);
       if(newResponse->getCacheControl() != ""){
         if (newResponse->getCacheControl().find("must-revalidate")!=-1){
             pthread_mutex_lock(&mutex);
@@ -227,7 +227,7 @@ void Cache::check_validation(Request request, Response response, int user_id, st
 
 void Cache::respond_to_client(Response response, int user_id){
     httpConnector.sendMessage(response, true);
-    std::string first = response.getFirst();
+    std::string first = response.getFirstLine();
     pthread_mutex_lock(&mutex);
     out << user_id << ": Responding " << first << std::endl;
     pthread_mutex_unlock(&mutex);

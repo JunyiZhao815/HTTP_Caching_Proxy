@@ -60,3 +60,22 @@ std::string Response::getWarning(){
   checkHasField("warn-code");
   return header["warn-code"];
 }
+
+
+std::string Response::getCacheable(){
+  std::string cache_control = getCacheControl();
+  if(cache_control != ""){
+    size_t no_store_index = cache_control.find("no-store");
+    size_t private_index = cache_control.find("private");
+    if (no_store_index!=-1 || private_index!=-1){
+        if (no_store_index!=-1){
+            header["cacheable"]  = "no-store";
+        }else{
+            header["cacheable"] = "private";
+        }
+    }else{
+        header["cacheable"] = "yes";
+    }
+  }
+  return header["cacheable"];
+}
