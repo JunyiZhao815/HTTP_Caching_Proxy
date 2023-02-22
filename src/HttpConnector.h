@@ -53,7 +53,6 @@ public:
   /*
    * Send request/response to receiver
    * @httpMessage request/response
-   * @receiver_fd receiver socket fd
    * @isSendToClient true:send to client, false: send to server
    */
   void sendMessage(HttpMessage &httpMessage, bool isSendToClient);

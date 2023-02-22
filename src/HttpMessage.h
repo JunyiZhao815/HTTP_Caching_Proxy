@@ -18,36 +18,12 @@ protected:
   void checkHasField(const std::string &name) const;
 
 public:
-  HttpMessage(const unsigned int version,
-              std::map<std::string, std::string> &header, std::string &body);
-
-  /*
-   * Transform header to string
-   */
-  std::string header2string() const;
-
-  std::string getVersion() const;
-
-  /*
-   * Get Cache-Control (cache-control) from header
-   * @throw invalid_argument
-   */
-  std::string getCacheControl();
-
-  /*
-   * Get max-age from header
-   * @throw invalid_argument
-   */
-  std::string getMaxAge();
-
-  std::string getDate();
-
   /*
    * Transform http message to string
    */
   virtual std::string message2string() = 0;
 
-  /*
+    /*
    * Compare if two http message is equal (content is same)
    */
   bool operator==(HttpMessage &httpMessage);
@@ -72,6 +48,31 @@ public:
    * If exist key, replace the value
    */
   void addHeaderField(const std::string &name, const std::string &value);
+
+public:
+  HttpMessage(const unsigned int version,
+              std::map<std::string, std::string> &header, std::string &body);
+
+  /*
+   * Transform header to string
+   */
+  std::string header2string() const;
+
+  std::string getVersion() const;
+
+  /*
+   * Get Cache-Control (cache-control) from header
+   * @throw invalid_argument
+   */
+  std::string getCacheControl();
+
+  /*
+   * Get max-age from header
+   * @throw invalid_argument
+   */
+  std::string getMaxAge();
+
+  std::string getDate();
 
   virtual ~HttpMessage();
 };

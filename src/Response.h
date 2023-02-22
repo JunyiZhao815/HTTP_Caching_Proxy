@@ -15,6 +15,11 @@ public:
   friend std::ostream &operator<<(std::ostream &out, const Response response);
 
   /*
+   * Transform request to string
+   */
+  std::string message2string();
+
+  /*
    * Get Expires (expires) field from header
    */
   std::string getExpires();
@@ -23,11 +28,6 @@ public:
    * Get Last-Modified (last-modified) field from header
    */
   std::string getLastModified();
-
-  /*
-   * Transform request to string
-   */
-  std::string message2string();
 
   std::string getStatusCode();
 
