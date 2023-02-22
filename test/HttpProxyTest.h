@@ -6,6 +6,7 @@
 class HttpProxyTest : public UnitTest {
 private:
   void test_single_thread_proxy(std::string port = "4000");
+  void test_multi_thread_proxy(std::string port = "4000");
 
 public:
   void onRun() override;

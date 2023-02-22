@@ -18,4 +18,4 @@ void GetMethod::filter(Request &request) {
   }
 }
 
-void GetMethod::_expect() { throw std::invalid_argument("400"); }
+void GetMethod::_expect() { throw std::invalid_argument("400|Except field is not valid in Get Method"); }

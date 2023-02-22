@@ -10,7 +10,7 @@ void HttpConnectorTest::test_simple_proxy(std::string port) {
   // wait client connect
   int fd = tcpConnector.initializeServerSocket(port.c_str());
   int c_fd = tcpConnector.waitAcceptConnect(fd);
-  HttpConnector httpConnector(c_fd);
+  HttpConnector httpConnector(c_fd, 1);
   // receive client request
   Request *request = httpConnector.receiveRequest();
   std::cout << "client request:\n";
