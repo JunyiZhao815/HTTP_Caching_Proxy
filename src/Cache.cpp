@@ -4,10 +4,11 @@
 #include <fstream>
 #include <iostream>
 std::ofstream out("/var/log/erss/proxy.log");
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-Response Cache::getResponse(Request request) {
+Node* Cache::getResponse(Request request) {
   std::string URI = request.getURI();
-  return map[URI]->response;
+  return map[URI];
 }
 
 void Cache::putResponse(Request request, Response response) {
@@ -57,15 +58,16 @@ int get_freshness_lifetime(std::string max_age, std::string expires,
   } else if (last_modified != "") {
     time_t last_modified_time = convert_string2timet(last_modified);
     time_t date = convert_string2timet(response.getDate());
-    time_t heuristic_lifetime = difftime(date last_modified_time) / 10;
+    time_t heuristic_lifetime = difftime(date, last_modified_time) / 10;
     time_t current_age = get_current_age(request, response);
     if (current_age > 24 * 60 * 60 && response.getWarning() == "") {
-      std::string new_header =
-          response.getHeader() + "\r\n" + "warn-code: 133" + "\r\n\r\n";
+      response.addHeaderField("warn-code", "133");
     }
     return heuristic_lifetime;
   }
 }
+
+
 time_t convert_string2timet(std::string time) {
   size_t gmt = time.find("GMT");
   if (gmt != std::string::npos) {
@@ -73,10 +75,13 @@ time_t convert_string2timet(std::string time) {
   }
   struct tm tm;
   strptime(time.c_str(), "%a, %d %b %Y %H:%M:%S", &tm);
-  return mktime(&tm);
+  return mktime(&tm) - 18000;
 }
+
+
+
 time_t get_current_age(Request request, Response response) {
-  time_t age_value = atoi(response.getAge());
+  time_t age_value = stoi(response.getAge());
   time_t date_value = convert_string2timet(response.getDate());
   time_t now = time(NULL);
   time_t request_time = convert_string2timet(request.getDate());
@@ -91,14 +96,18 @@ time_t get_current_age(Request request, Response response) {
   time_t current_age = corrected_initial_age + resident_time;
   return current_age;
 }
+
+
+
 bool Cache::isFresh(Request request, Response response, std::ostream &out,
                     int user_id) {
-  Response response_old = this->getResponse(request);
-  if (response_old.isNull == true) {
-    std::cout
+  Node* response_node = this->getResponse(request);
+  if (response_node == NULL) {
+    std::cerr
         << "Cannot find the response you are trying to check freshing or not"
         << std::endl;
   }
+  Response response_old = response_node->response;
   std::string cache_control = response_old.getCacheControl();
   if (cache_control == "") {
     return false;
@@ -119,60 +128,117 @@ bool Cache::isFresh(Request request, Response response, std::ostream &out,
   }
 }
 
-void Cache::revalidation(int client_fd, int server_fd, int user_id,
-                         Response response, Request request) {
+
+void print_expire(int user_id, Response response){
+    std::string max_age = response.getMaxAge();
+    std::string expires = response.getExpires();
+    std::string last_modified = response.getLastModified();
+    std::string date = response.getDate();
+    if (max_age != "") {
+        time_t max_age_int = stoi(max_age);
+        time_t date_age = convert_string2timet(date);
+        time_t expire_age = date_age + max_age_int;
+        struct tm *exp = gmtime(&expire_age);
+        const char *expire_time_act = asctime(exp);
+        out << user_id << ": cached, expires at " << expire_time_act;
+    } else if (expires != "") {
+        time_t expire_time = convert_string2timet(expires);
+        struct tm *exp = gmtime(&expire_time);
+        const char *expire_time_act = asctime(exp);
+        out << user_id << ": cached, expires at " << expire_time_act;
+    } else if (last_modified != "") {
+        time_t date_age = convert_string2timet(date);
+        time_t last_modified_age = convert_string2timet(last_modified);
+        time_t exp_age = time(NULL) + difftime(date_age, last_modified_age) / 10;
+        struct tm *exp = gmtime(&exp_age);
+        const char *expire_time_act = asctime(exp);
+        out << user_id << ": cached, expires at " << expire_time_act;
+    }
+}
+
+
+
+void Cache::revalidation(int user_id, Response response, Request request) {
   std::string etag = response.getEtag();
   std::string lastModified = response.getLastModified();
   // 1. Sending a Validation Request
-  std::string header_request = request.getHeader();
   TcpConnector tcp = TcpConnector();
   if (etag != "") {
-    std::string new_header =
-        header_request + "\r\n" + "If-None-Match: " + etag + "\r\n\r\n";
-    send(client_fd, new_header.data(), new_header.size() + 1, 0);
-    // receive new response
-    std::vector<char> vector(65536, 0);
-    int a = recv(client_fd, &vector.data()[0], vector.size(), 0);
-    if (a == -1) {
-      std::cerr << "Error: receive error" << std::endl;
-      exit(EXIT_FAILURE);
-    }
-    std::string isChunk = response.getTransferEncoding();
-    if (isChunk == "chunked") {
-
-    } else {
-    }
-
+    check_validation(request, response, user_id, "If-None-Match", etag);
   } else if (lastModified != "") {
-    std::string new_header = header_request + "\r\n" +
-                             "If-Modified-Since: " + lastModified + "\r\n\r\n";
-    // tcp.sendMessage(client_fd, &new_header, sizeof(new_header));
-    //直接调用httpConnector的sendMessage发送request/response就好了，client_fd 和
-    // server_fd已经内置了
-    httpConnector.sendMessage(request, true);
+    check_validation(request, response, user_id, "If-Modified-Since", lastModified);
   } else {
+    check_validation(request, response, user_id, "", "");
   }
 }
-void check_etag_validation(std::string etag, int server_fd, int user_id,
-                           Request request, Response reponse) {
-  out << user_id << ": NOTE ETag: " << etag << std::endl;
-  std::string header_request = request.getHeader();
-  std::string new_header =
-      header_request + "\r\n" + "If-None-Match: " + etag + "\r\n\r\n";
-  TcpConnector tcp = TcpConnector();
-  tcp.sendMessage(server_fd, &new_header, sizeof(new_header));
-  // std::vector<char>new_response(65536, 0);
-  std::string new_response;
-  recv(server_fd, &new_response, sizeof(new_response), MSG_WAITALL);
-  HttpParser httpParser;
-  size_t len;
-  Response *r =
-      httpParser.parseResponse(const_cast<char *>(new_response.c_str()), len);
-  if (r->getStatusCode() == "304") {
-    // respond from cache
 
-  } else if (r->getStatusCode() == "200") {
+void Cache::check_validation(Request request, Response response, int user_id, std::string tag, std::string value) {
+  if(tag == "If-None-Match"){
+    out << user_id << ": NOTE ETag: " << value << std::endl;
+  }else if(tag == "If-Modified-Since"){
+    out << user_id << ": NOTE Last-Modified: " << value << std::endl;
+  }else{
+    out << "send again" << std::endl;
+  }
+  Request newRequest = request;
+  if(tag != ""){
+    newRequest.addHeaderField(tag, value);
+  }
+  httpConnector.sendMessage(newRequest, false);
+  Response* newResponse = httpConnector.receiveResponse();
+
+  if (newResponse->getStatusCode() == "304") {
+    // respond from cache
+    std::cout << "code = 304" << std::endl;
+    respond_to_client(response, user_id);
+
+  } else if (newResponse->getStatusCode() == "200") {
+    std::cout << "200" << std::endl;
+    //If the new response is cacheable
+    if(newResponse->getCacheable() == "yes"){
+      pthread_mutex_lock(&mutex);
+      //Update response
+      putResponse(request, *newResponse);
+      pthread_mutex_unlock(&mutex);
+      if(newResponse->getCacheControl() != ""){
+        if (newResponse->getCacheControl().find("must-revalidate")!=-1){
+            pthread_mutex_lock(&mutex);
+            out << user_id << ": cached, but requires re-validation" << std::endl;
+            std::cout << "cached, but requires re-validation" << std::endl;
+            pthread_mutex_unlock(&mutex);
+        }else{
+            pthread_mutex_lock(&mutex);
+            print_expire(user_id, response);
+            pthread_mutex_unlock(&mutex);
+        }
+      }
+    }else{
+        pthread_mutex_lock(&mutex);
+        if (newResponse->getCacheable()==""){
+          out << user_id << ": not cacheable because cache control not specified" << std::endl;
+        }else{
+          out << user_id << ": not cacheable because " << newResponse->getCacheable() << std::endl;
+        }
+        pthread_mutex_unlock(&mutex);
+    }
+    respond_to_client(*newResponse, user_id);
   }
 }
-void check_lastModified_validation(std::string etag, int server_fd, int user_id,
-                                   Request request, Response reponse) {}
+
+void Cache::respond_to_client(Response response, int user_id){
+    httpConnector.sendMessage(response, true);
+    std::string first = response.getFirst();
+    pthread_mutex_lock(&mutex);
+    out << user_id << ": Responding " << first << std::endl;
+    pthread_mutex_unlock(&mutex);
+
+}
+
+bool Cache::isCacheable(Response response){
+  if(response.getCacheable() == "yes"){
+    return true;
+  }else{
+    return false;
+  }
+}
+

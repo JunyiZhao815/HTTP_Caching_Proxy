@@ -38,5 +38,9 @@ public:
   std::string getAge();
 
   std::string getWarning();
+
+  std::string getFirst();
+
+  std::string getCacheable();
 };
 #endif
