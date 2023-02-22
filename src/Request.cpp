@@ -41,4 +41,4 @@ std::string Request::message2string() {
 
 std::string Request::getMethod() { return method; }
 
-std::string Request::getUrl() { return uri; }
+std::string Request::getURI() { return uri; }

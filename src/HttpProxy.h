@@ -30,16 +30,11 @@ private:
 
   /*
    * Execute specify http method
+   * Only accept GET, POST, CONNECT
+   * @throw invalid_exception
    */
   void methodAct(const std::string &method, HttpConnector &httpConnector,
                  Request &request);
-
-  /*
-   * Filt unaccept http method
-   * currently: GET, POST, CONNECT
-   * @throw argument_invalid(405)
-   */
-  void filtHttpMethod(const std::string method);
 
 public:
   /*

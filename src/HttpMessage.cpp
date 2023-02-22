@@ -25,7 +25,7 @@ std::string HttpMessage::getVersion() const {
 void HttpMessage::checkHasField(const std::string &name) const {
   if (header.find(name) == header.end()) {
     std::string errmsg = "No " + name + " field in head";
-    //TODO log out errmsg
+    // TODO log out errmsg
     throw std::invalid_argument("400");
   }
 }
@@ -38,6 +38,11 @@ std::string HttpMessage::getCacheControl() {
 std::string HttpMessage::getMaxAge() {
   checkHasField("max-age");
   return header["max-age"];
+}
+
+std::string HttpMessage::getDate() {
+  checkHasField("date");
+  return header["date"];
 }
 
 bool HttpMessage::operator==(HttpMessage &httpMessage) {
@@ -61,4 +66,16 @@ bool HttpMessage::doesHeaderHave(std::string name) {
     return false;
   }
   return true;
+}
+
+void HttpMessage::addHeaderField(const std::string &name,
+                                 const std::string &value) {
+  if (header.find(name) != header.end()) {
+    header[name] = value;
+  } else {
+    std::pair<std::string, std::string> key_value;
+    key_value.first = name;
+    key_value.second = value;
+    header.insert(key_value);
+  }
 }

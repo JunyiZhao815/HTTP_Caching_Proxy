@@ -25,13 +25,18 @@ public:
   std::string getLastModified();
 
   /*
-   * Get Date (date) field from header
-   */
-  std::string getDate();
-
-  /*
    * Transform request to string
    */
   std::string message2string();
+
+  std::string getStatusCode();
+
+  std::string getEtag();
+
+  std::string getTransferEncoding();
+
+  std::string getAge();
+
+  std::string getWarning();
 };
 #endif

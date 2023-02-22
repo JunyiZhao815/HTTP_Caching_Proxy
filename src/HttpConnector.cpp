@@ -82,4 +82,11 @@ void HttpConnector::tunnelTransport() {
           "tunnel closed by accident between client and server");
     }
   }
+
+  void HttpConnector::sendMessage(const HttpMessage &httpMessage,
+                                  const int receiver_fd) {
+    std::stringstream ss;
+    ss << httpMessage;
+    tcpConnector.sendMessage(httpMessage, receiver_fd);
+  }
 }

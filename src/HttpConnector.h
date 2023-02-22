@@ -49,6 +49,13 @@ public:
    * keep connection until one close socket
    */
   void tunnelTransport();
+
+    /*
+   * Send request/response to receiver
+   * @httpMessage request/response
+   * @receiver_fd receiver socket fd
+   */
+  void sendMessage(const HttpMessage &httpMessage, const int receiver_fd);
 };
 
 #endif

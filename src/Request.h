@@ -28,7 +28,7 @@ public:
 
   std::string getMethod();
 
-  std::string getUrl();
+  std::string getURI();
 };
 
 #endif

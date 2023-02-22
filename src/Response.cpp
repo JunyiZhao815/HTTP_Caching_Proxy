@@ -31,13 +31,32 @@ std::string Response::getLastModified() {
   return header["last-modified"];
 }
 
-std::string Response::getDate() {
-  checkHasField("date");
-  return header["date"];
-}
-
 std::string Response::message2string() {
   std::stringstream ss;
   ss << *this;
   return ss.str();
+}
+
+std::string Response::getStatusCode(){
+  return status_code;
+}
+
+std::string Response::getEtag(){
+  checkHasField("etag");
+  return header["etag"];
+}
+
+std::string Response::getTransferEncoding(){
+  checkHasField("transfer-encoding");
+  return header["transfer-encoding"];
+}
+
+std::string Response::getAge(){
+  checkHasField("age");
+  return header["age"];
+}
+
+std::string Response::getWarning(){
+  checkHasField("warn-code");
+  return header["warn-code"];
 }

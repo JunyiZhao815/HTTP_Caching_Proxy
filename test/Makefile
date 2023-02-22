@@ -6,4 +6,4 @@ test:
 
 .PHONY: clean
 clean:
-	rm -f *~ alltest *.out
+	rm -f *~ alltest *.out proxy.log

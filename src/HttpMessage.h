@@ -40,6 +40,8 @@ public:
    */
   std::string getMaxAge();
 
+  std::string getDate();
+
   /*
    * Transform http message to string
    */
@@ -64,6 +66,12 @@ public:
    * @return true/false
    */
   bool doesHeaderHave(std::string name);
+
+  /*
+   * Add field to request/response header
+   * If exist key, replace the value
+   */
+  void addHeaderField(const std::string &name, const std::string &value);
 
   virtual ~HttpMessage();
 };

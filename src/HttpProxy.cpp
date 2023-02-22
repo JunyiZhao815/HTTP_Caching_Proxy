@@ -1,21 +1,16 @@
 #include "HttpProxy.h"
 
-void HttpProxy::filtHttpMethod(const std::string method) {
-  if (!(method == "GET" || method == "POST" || method == "CONNECT")) {
-    throw std::invalid_argument("405");
-  }
-}
-
 void HttpProxy::methodAct(const std::string &method,
                           HttpConnector &httpConnector, Request &request) {
   HttpMethod *httpMethod;
-  std::cout<<method<<std::endl;
   if (method == "GET") {
     httpMethod = new GetMethod();
   } else if (method == "POST") {
     httpMethod = new PostMethod();
-  } else {
+  } else if(method == "CONNECT"){
     httpMethod = new ConnectMethod();
+  }else{
+    throw std::invalid_argument("405");
   }
   httpMethod->takeAction(httpConnector, request);
   delete httpMethod;
@@ -26,8 +21,6 @@ void HttpProxy::_exec(int client_socket_fd) {
   try {
     // receive client request
     Request *request = httpConnector.receiveRequest();
-
-    filtHttpMethod(request->getMethod());
     std::pair<std::string, std::string> ip_port = request->getHost();
     // connect with server
     int server_socket_fd = tcpConnector.initializeClientSocket(
