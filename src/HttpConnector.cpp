@@ -1,8 +1,18 @@
 #include "HttpConnector.h"
 #include <string_view>
 
-HttpConnector::HttpConnector(const int c_fd)
-    : client_socket_fd(c_fd), server_socket_fd(-1) {}
+HttpConnector::HttpConnector(const int c_fd, const int client_id)
+    : client_socket_fd(c_fd), server_socket_fd(-1), client_id(client_id) {
+#ifdef DEBUG
+  std::cout << "new connector:" << client_id << std::endl;
+#endif
+}
+
+HttpConnector::~HttpConnector() {
+#ifdef DEBUG
+  std::cout << "[" << getClientId() << "] finish method\n";
+#endif
+}
 
 void HttpConnector::set_server_socket_fd(int s_fd) { server_socket_fd = s_fd; }
 
@@ -13,6 +23,12 @@ Request *HttpConnector::receiveRequest() {
   while (request == NULL) {
     void *msg = tcpConnector.receiveMessage(client_socket_fd, msglen);
     request = httpParser.parseRequest((char *)msg, msglen);
+    // package is not complete but client close connection
+    if(msglen == 0 && request == NULL){
+      free(msg);
+      throw std::runtime_error("Client close connection");
+    }
+    free(msg);
   }
   return request;
 }
@@ -24,6 +40,11 @@ Response *HttpConnector::receiveResponse() {
   while (response == NULL) {
     void *msg = tcpConnector.receiveMessage(server_socket_fd, msglen);
     response = httpParser.parseResponse((char *)msg, msglen);
+    if(msglen == 0 && response == NULL){
+      free(msg);
+      throw std::runtime_error("Server close connection");
+    }
+    free(msg);
   }
   return response;
 }
@@ -57,29 +78,32 @@ void HttpConnector::tunnelTransport() {
   fd_set readfds;
   int client_len = -1;
   int server_len = -1;
+  struct timeval tv;
+  tv.tv_sec = 10;
+  tv.tv_usec = 0;
   while (true) {
     FD_ZERO(&readfds);
     FD_SET(client_socket_fd, &readfds);
     FD_SET(server_socket_fd, &readfds);
-    int event_nums = select(FD_SETSIZE, &readfds, NULL, NULL, NULL);
-    if (event_nums >= 0) {
+    int event_nums = select(FD_SETSIZE, &readfds, NULL, NULL, &tv);
+    if (event_nums > 0) {
       if (FD_ISSET(client_socket_fd, &readfds)) {
         // client -> server
         client_len = transportRawMessage(client_socket_fd, server_socket_fd);
-        std::cout << "c->s, " << client_len << std::endl;
       }
       if (FD_ISSET(server_socket_fd, &readfds)) {
         // server -> client
         server_len = transportRawMessage(server_socket_fd, client_socket_fd);
-        std::cout << "s->c, " << server_len << std::endl;
       }
       // one ternal close the connection
       if (client_len == 0 || server_len == 0) {
         return;
       }
-    } else {
+    } else if(event_nums == 0){
+      throw std::runtime_error("Tunnel closed between client and server due to timeout");
+    }else{
       throw std::runtime_error(
-          "tunnel closed by accident between client and server");
+          "Tunnel closed between client and server by accident");
     }
   }
 }
@@ -92,3 +116,5 @@ void HttpConnector::sendMessage(HttpMessage &httpMessage, bool isSendToClient) {
     tcpConnector.sendMessage(server_socket_fd, ss.c_str(), ss.length());
   }
 }
+
+size_t HttpConnector::getClientId() { return client_id; }

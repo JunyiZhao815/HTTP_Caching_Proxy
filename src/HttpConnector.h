@@ -2,12 +2,14 @@
 #define __HTTP_CONNECTOR_H__
 #include "HttpParser.h"
 #include "TcpConnector.h"
+#define DEBUG
 
 class HttpConnector {
 private:
   int client_socket_fd;
   int server_socket_fd;
   TcpConnector tcpConnector;
+  int client_id;
 
 private:
   /*
@@ -19,7 +21,10 @@ private:
   size_t transportRawMessage(const int from_socket, const int to_socket);
 
 public:
-  HttpConnector(const int c_fd);
+  HttpConnector(const int c_fd, const int client_id);
+
+  ~HttpConnector();
+
   /*
    * Set server_socket_fd
    */
@@ -53,10 +58,11 @@ public:
   /*
    * Send request/response to receiver
    * @httpMessage request/response
-   * @receiver_fd receiver socket fd
    * @isSendToClient true:send to client, false: send to server
    */
   void sendMessage(HttpMessage &httpMessage, bool isSendToClient);
+
+  size_t getClientId();
 };
 
 #endif

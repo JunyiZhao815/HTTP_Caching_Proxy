@@ -92,7 +92,13 @@ void *TcpConnector::receiveMessage(const int client_connection_fd,
     commonError("Allocate memory for received message failed");
   }
   memset(buffer, 0, BUFFER_SIZE);
-  len = recv(client_connection_fd, buffer, BUFFER_SIZE, 0);
+  int ret = recv(client_connection_fd, buffer, BUFFER_SIZE, 0);
+  if(ret == -1){
+    commonError("Receive Message failed due to timeout");
+  }else{
+    len = ret;
+  }
+
   return buffer;
 }
 

@@ -35,9 +35,8 @@ Request *HttpParser::parseRequest(const char *msg, const size_t len) {
   if (ec == http::error::need_more || ec.value() == 0) {
     ec.clear();
   } else {
-    //TODO log out error message
-    //throw std::invalid_argument(ec.message());
-    throw std::invalid_argument("400");
+    std::string errmsg = "400|" + ec.message();
+    throw std::invalid_argument(errmsg);
   }
   return NULL;
 }
@@ -69,9 +68,8 @@ Response *HttpParser::parseResponse(const char *msg, const size_t len) {
   if (ec == http::error::need_more || ec.value() == 0) {
     ec.clear();
   } else {
-    //throw std::invalid_argument(ec.message());
-    // TODO log out error message
-    throw std::invalid_argument("400");
+    std::string errmsg = "400|"+ec.message();
+    throw std::invalid_argument(errmsg);
   }
   return NULL;
 }
