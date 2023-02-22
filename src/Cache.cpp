@@ -148,8 +148,8 @@ void Cache::revalidation(int client_fd, int server_fd, int user_id,
                              "If-Modified-Since: " + lastModified + "\r\n\r\n";
     // tcp.sendMessage(client_fd, &new_header, sizeof(new_header));
     //直接调用httpConnector的sendMessage发送request/response就好了，client_fd 和
-    //server_fd已经内置了
-    httpConnector.sendMessage(request, client_fd);
+    // server_fd已经内置了
+    httpConnector.sendMessage(request, true);
   } else {
   }
 }
