@@ -93,9 +93,10 @@ void *TcpConnector::receiveMessage(const int client_connection_fd,
   }
   memset(buffer, 0, BUFFER_SIZE);
   int ret = recv(client_connection_fd, buffer, BUFFER_SIZE, 0);
-  if(ret == -1){
+  if (ret == -1) {
+    free(buffer);
     commonError("Receive Message failed due to timeout");
-  }else{
+  } else {
     len = ret;
   }
 

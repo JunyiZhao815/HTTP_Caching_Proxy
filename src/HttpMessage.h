@@ -74,7 +74,7 @@ public:
 
   std::string getDate();
   
-  std::string HttpMessage::getFirstLine();
+  virtual std::string getFirstLine() = 0;
 
   virtual ~HttpMessage();
 };

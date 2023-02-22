@@ -68,7 +68,12 @@ size_t HttpConnector::transportRawMessage(const int from_socket,
   size_t len;
   void *msg = tcpConnector.receiveMessage(from_socket, len);
   if (len != 0) {
-    tcpConnector.sendMessage(to_socket, msg, len);
+    try{
+      tcpConnector.sendMessage(to_socket, msg, len);
+    }catch(std::runtime_error& e){
+      free(msg);
+      throw;
+    }
   }
   free(msg);
   return len;

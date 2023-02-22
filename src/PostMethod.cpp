@@ -8,7 +8,12 @@ void PostMethod::takeAction(HttpConnector &httpConnector, Request &request) {
   // receive response from server
   Response *response = httpConnector.receiveResponse();
   // send response to client
-  httpConnector.sendResponse(response);
+  try{
+    httpConnector.sendResponse(response);
+  }catch(std::runtime_error& e){
+    delete response;
+    throw;
+  }
   delete response;
 }
 

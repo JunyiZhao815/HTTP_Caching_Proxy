@@ -37,14 +37,14 @@ std::string HttpMessage::getCacheControl() {
 std::string HttpMessage::getMaxAge() {
   std::string cache_control = getCacheControl();
   size_t index = cache_control.find("max-age=");
-  if (index!=-1){
-      index+=8;
-      std::string ans = "";
-      while (isdigit(cache_control[index])){
-          ans+=cache_control[index];
-          index++;
-      }
-      header["max-age"] = ans;
+  if (index != std::string::npos) {
+    index += 8;
+    std::string ans = "";
+    while (isdigit(cache_control[index])) {
+      ans += cache_control[index];
+      index++;
+    }
+    header["max-age"] = ans;
   }
   return header["max-age"];
 }
@@ -87,9 +87,4 @@ void HttpMessage::addHeaderField(const std::string &name,
     key_value.second = value;
     header.insert(key_value);
   }
-}
-
-
-std::string HttpMessage::getFirstLine(){
-
 }

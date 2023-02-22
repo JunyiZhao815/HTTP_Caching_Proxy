@@ -40,5 +40,7 @@ public:
   std::string getWarning();
 
   std::string getCacheable();
+
+  std::string getFirstLine() override;
 };
 #endif

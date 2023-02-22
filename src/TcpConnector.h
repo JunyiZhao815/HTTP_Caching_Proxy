@@ -7,6 +7,7 @@
 #include <cstring>
 #include <exception>
 #include <iostream>
+#include <memory>
 #include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>

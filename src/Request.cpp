@@ -42,3 +42,8 @@ std::string Request::message2string() {
 std::string Request::getMethod() { return method; }
 
 std::string Request::getURI() { return uri; }
+
+std::string Request::getFirstLine(){
+  std::string firstLine = method + " " + uri + " " + getVersion();
+  return firstLine;
+}

@@ -26,6 +26,8 @@ public:
    */
   std::string message2string();
 
+  std::string getFirstLine() override;
+
   std::string getMethod();
 
   std::string getURI();
