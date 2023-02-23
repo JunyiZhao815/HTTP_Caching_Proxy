@@ -1,0 +1,9 @@
+version: '2'
+services:
+  http_proxy:
+    build: ./src
+      container_name: http_proxy
+      ports:
+        - '12345:4000'
+      volumes:
+        - ./logs:/var/log/erss
