@@ -1,4 +1,5 @@
 #include "TcpConnector.h"
+#include <sstream>
 
 void TcpConnector::commonError(const std::string &description) {
   std::string errmsg = "Error: " + description;
@@ -107,6 +108,8 @@ void TcpConnector::sendMessage(const int sockfd, const void *msg,
                                const size_t len) {
   int status = send(sockfd, msg, len, 0);
   if (status == -1) {
-    commonError("send message fail");
+    std::stringstream ss;
+    ss << "send message fail, reason:" << strerror(errno);
+    commonError(ss.str());
   }
 }
