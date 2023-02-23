@@ -18,9 +18,9 @@ public:
 class Cache {
 private:
   HttpConnector httpConnector;
-
 public:
   // Here I use First In First Out(FIFO) to implement the replacement policy
+  std::mutex m;
   std::map<std::string, Node *> map;
   size_t capacity;
   size_t size;
@@ -31,8 +31,8 @@ public:
   void usingCache(Request request, int user_id);
   Node* getResponse(Request request);
   void putResponse(Request request, Response response);
-  bool isFresh(Request request, Response response, std::ostream &out,
-               int user_id);
+  bool isFresh(Request request, Response response, int user_id);
+
   void revalidation(int user_id, Response response, Request request);
   void check_validation(Request request, Response response, int user_id, std::string tag, std::string value);
   void respond_to_client(Response response, int user_id);
