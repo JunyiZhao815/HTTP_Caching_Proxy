@@ -41,6 +41,23 @@ Request *HttpParser::parseRequest(const char *msg, const size_t len) {
   return NULL;
 }
 
+void HttpParser::handleChunked(Response* response){
+  // delete chunked from Transfer-Encoding
+  std::string transferEncoding = response->getTransferEncoding();
+  if(transferEncoding == "chunked"){
+    response->removeHeaderField("transfer-encoding");
+  }else{
+    size_t index = transferEncoding.find(", chunked");
+    transferEncoding = transferEncoding.substr(0, index);
+    response->addHeaderField("transfer-encoding", transferEncoding);
+  }
+  // remove trailer-part
+  response->removeHeaderField("trailer-part");
+  // add Content-Length
+  size_t contentLength = response->getContentLen();
+  response->addHeaderField("content-length", std::to_string(contentLength));
+}
+
 Response *
 HttpParser::createResponse(http::response<http::string_body> message) {
   std::string status_code = std::to_string(message.result_int());
@@ -52,23 +69,28 @@ HttpParser::createResponse(http::response<http::string_body> message) {
 
   Response *response = new Response(version, status_code, reason,
                                     responseHeader, message.body());
-
+  if(message.chunked()){
+    handleChunked(response);
+  }
   return response;
 }
 
 Response *HttpParser::parseResponse(const char *msg, const size_t len) {
   addToRemainParsed(msg, len);
   boost::system::error_code ec;
-  size_t consumed = responseParser.put(
-      boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
-  remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
+  size_t consumed = 1;
+  while (consumed != 0 && !remainParsed.empty()) {
+    consumed = responseParser.put(
+        boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
+    remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
+  }
   if (responseParser.is_done()) {
     return createResponse(responseParser.release());
   }
   if (ec == http::error::need_more || ec.value() == 0) {
     ec.clear();
   } else {
-    std::string errmsg = "400|"+ec.message();
+    std::string errmsg = "400|" + ec.message();
     throw std::invalid_argument(errmsg);
   }
   return NULL;

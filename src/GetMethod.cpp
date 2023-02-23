@@ -8,9 +8,9 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request) {
   // receive response from server
   Response *response = httpConnector.receiveResponse();
   // send response to client
-  try{
+  try {
     httpConnector.sendResponse(response);
-  }catch(std::runtime_error& e){
+  } catch (std::runtime_error &e) {
     delete response;
     throw;
   }
@@ -23,4 +23,6 @@ void GetMethod::filter(Request &request) {
   }
 }
 
-void GetMethod::_expect() { throw std::invalid_argument("400|Except field is not valid in Get Method"); }
+void GetMethod::_expect() {
+  throw std::invalid_argument("400|Except field is not valid in Get Method");
+}

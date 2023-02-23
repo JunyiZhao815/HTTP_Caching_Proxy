@@ -88,3 +88,13 @@ void HttpMessage::addHeaderField(const std::string &name,
     header.insert(key_value);
   }
 }
+
+void HttpMessage::removeHeaderField(std::string name){
+  if(header.find(name) != header.end()){
+    header.erase(name);
+  }
+}
+
+size_t HttpMessage::getMessageLen(){
+  return message2string().length();
+}

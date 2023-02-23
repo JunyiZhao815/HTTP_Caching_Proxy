@@ -1,5 +1,11 @@
 #include "Response.h"
 
+std::string Response::getStartLine() const {
+  std::string startLine =
+      getVersion() + " " + status_code + " " + reason + "\r\n";
+  return startLine;
+}
+
 Response::Response(const unsigned int version, const std::string &status_code,
                    const std::string &reason,
                    std::map<std::string, std::string> &header,
@@ -9,8 +15,7 @@ Response::Response(const unsigned int version, const std::string &status_code,
 
 std::ostream &operator<<(std::ostream &out, const Response response) {
   // start line
-  out << response.getVersion() << " " << response.status_code << " "
-      << response.reason << "\r\n";
+  out << response.getStartLine();
 
   // header
   out << response.header2string();
@@ -82,3 +87,5 @@ std::string Response::getFirstLine() {
   std::string firstLine = getVersion() + " " + status_code + " " + reason;
   return firstLine;
 }
+
+size_t Response::getContentLen() { return body.length(); }

@@ -77,6 +77,13 @@ public:
   virtual std::string getFirstLine() = 0;
 
   virtual ~HttpMessage();
+
+  void removeHeaderField(std::string name);
+
+  /*
+   * Calculate the length of whole message, including the start line, header and body
+   */
+  size_t getMessageLen();
 };
 
 #endif

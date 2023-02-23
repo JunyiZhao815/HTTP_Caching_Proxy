@@ -7,6 +7,9 @@ private:
   std::string status_code;
   std::string reason;
 
+private:
+  std::string getStartLine() const;
+
 public:
   Response(const unsigned int version, const std::string &status_code,
            const std::string &reason,
@@ -42,5 +45,10 @@ public:
   std::string getCacheable();
 
   std::string getFirstLine() override;
+
+  /*
+   * Calculate content length, without calculating the header and first line
+   */
+  size_t getContentLen();
 };
 #endif

@@ -69,6 +69,11 @@ private:
    */
   Response *createResponse(http::response<http::string_body> message);
 
+  /*
+   * Handle chunked response, delete chunked, trailer from header, reset content-length
+   */
+  void handleChunked(Response* response);
+
 public:
   /*
    * Parse msg with length of len to request
@@ -79,6 +84,7 @@ public:
    * Parse msg with length of len to response
    */
   Response *parseResponse(const char *msg, const size_t len);
+
 };
 
 #endif
