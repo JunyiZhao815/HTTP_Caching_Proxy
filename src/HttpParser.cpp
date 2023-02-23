@@ -26,9 +26,12 @@ Request *HttpParser::createRequest(http::request<http::string_body> message) {
 Request *HttpParser::parseRequest(const char *msg, const size_t len) {
   addToRemainParsed(msg, len);
   boost::system::error_code ec;
-  size_t consumed = requestParser.put(
-      boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
-  remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
+  size_t consumed = 1;
+  while(consumed != 0 && !remainParsed.empty()){
+    consumed = requestParser.put(boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
+    remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
+  }
+  
   if (requestParser.is_done()) {
     return createRequest(requestParser.release());
   }

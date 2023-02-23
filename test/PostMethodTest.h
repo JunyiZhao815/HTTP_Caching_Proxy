@@ -9,6 +9,7 @@ public:
 
 private:
   void test_simple_post(std::string port = "4000");
+  void test_post_by_while(std::string port = "4000");
 };
 
 #endif

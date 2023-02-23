@@ -79,6 +79,7 @@ void HttpProxy::exec(int client_socket_fd) {
   } catch (std::exception &e) {
     Logger::getLogger().proxyLog(client_id, e.what());
   }
+  close(client_socket_fd);
 }
 
 void HttpProxy::init(std::string port) {
@@ -96,11 +97,11 @@ void HttpProxy::sendErrorStatus(const std::string &status_code,
 void HttpProxy::noneMultiThread() {
   int client_socket_fd = tcpConnector.waitAcceptConnect(proxy_fd);
   exec(client_socket_fd);
-  close(client_socket_fd);
+  //close(client_socket_fd);
 }
 
 void HttpProxy::multiThread() {
-  boost::asio::thread_pool pool(threadPoolSize);
+  //boost::asio::thread_pool pool(threadPoolSize);
   while (true) {
     try {
       int client_socket_fd = tcpConnector.waitAcceptConnect(proxy_fd);
@@ -109,10 +110,10 @@ void HttpProxy::multiThread() {
       timeout.tv_usec = 0;
       setClientSocketFdRecvTimeout(client_socket_fd,
                                    timeout); // set recv only wait specify secs
-      // std::thread t(&HttpProxy::exec, this, client_socket_fd);
-      // t.detach();
-      boost::asio::post(pool,
-                        std::bind(&HttpProxy::exec, this, client_socket_fd));
+      std::thread t(&HttpProxy::exec, this, client_socket_fd);
+      t.detach();
+      //boost::asio::post(pool,
+       //                 std::bind(&HttpProxy::exec, this, client_socket_fd));
     } catch (std::runtime_error &e) {
       Logger::getLogger().log(e.what());
     } catch (std::exception &e) {
