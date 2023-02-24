@@ -1,8 +1,9 @@
 CC=g++
 CFLAGS=-std=c++11 -ggdb3 -pedantic -Wall
 
-test:
-	${CC} ${CFLAGS} -o alltest *.cpp ../src/*.cpp ../src/test/UnitTest.cpp
+alltest:
+	${CC} ${CFLAGS} -o alltest *.cpp ../src/*.cpp ../src/test/UnitTest.cpp -lboost_system -lpthread
+
 
 .PHONY: clean
 clean:

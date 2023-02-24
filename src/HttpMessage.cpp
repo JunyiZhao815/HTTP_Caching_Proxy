@@ -30,8 +30,12 @@ void HttpMessage::checkHasField(const std::string &name) const {
 }
 
 std::string HttpMessage::getCacheControl() {
-  checkHasField("cache-control");
-  return header["cache-control"];
+  try{
+    checkHasField("cache-control");
+    return header["cache-control"];
+  }catch(std::invalid_argument &e){
+    return "";
+  }
 }
 
 std::string HttpMessage::getMaxAge() {
@@ -50,8 +54,12 @@ std::string HttpMessage::getMaxAge() {
 }
 
 std::string HttpMessage::getDate() {
-  checkHasField("date");
-  return header["date"];
+  try{
+    checkHasField("date");
+    return header["date"];
+  }catch(std::invalid_argument &e){
+    return "";
+  }
 }
 
 bool HttpMessage::operator==(HttpMessage &httpMessage) {

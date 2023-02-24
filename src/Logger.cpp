@@ -20,3 +20,4 @@ void Logger::proxyLog(const int id, const std::string &msg) {
   std::string message = std::to_string(id) + ": " + msg;
   log(message);
 }
+

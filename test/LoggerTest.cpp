@@ -1,5 +1,5 @@
 #include "LoggerTest.h"
-
+#include <pthread.h>
 void LoggerTest::onRun() { test_log_multi_thread(); }
 
 void LoggerTest::test_log_multi_thread() {

@@ -27,13 +27,21 @@ std::ostream &operator<<(std::ostream &out, const Response response) {
 }
 
 std::string Response::getExpires() {
-  checkHasField("expires");
-  return header["expires"];
+  try{
+    checkHasField("expires");
+    return header["expires"];
+  }catch(std::invalid_argument &e){
+    return "";
+  }
 }
 
 std::string Response::getLastModified() {
-  checkHasField("last-modified");
-  return header["last-modified"];
+  try{
+    checkHasField("last-modified");
+    return header["last-modified"];
+  }catch(std::invalid_argument &e){
+    return "";
+  }
 }
 
 std::string Response::message2string() {
@@ -45,23 +53,39 @@ std::string Response::message2string() {
 std::string Response::getStatusCode() { return status_code; }
 
 std::string Response::getEtag() {
-  checkHasField("etag");
-  return header["etag"];
+  try{
+    checkHasField("etag");
+    return header["etag"];
+  }catch(std::invalid_argument &e){
+    return "";
+  }
 }
 
 std::string Response::getTransferEncoding() {
-  checkHasField("transfer-encoding");
-  return header["transfer-encoding"];
+  try{
+    checkHasField("transfer-encoding");
+    return header["transfer-encoding"];
+  }catch(std::invalid_argument &e){
+    return "";
+  }
 }
 
 std::string Response::getAge() {
-  checkHasField("age");
-  return header["age"];
+  try{
+    checkHasField("age");
+    return header["age"];
+  }catch(std::invalid_argument &e){
+    return "0";
+  }
 }
 
 std::string Response::getWarning() {
-  checkHasField("warn-code");
-  return header["warn-code"];
+  try{
+    checkHasField("warn-code");
+    return header["warn-code"];
+  }catch(std::invalid_argument &e){
+    return "";
+  }
 }
 
 std::string Response::getCacheable() {

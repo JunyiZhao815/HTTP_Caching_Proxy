@@ -3,7 +3,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <Logger.h>
+#include "Logger.h"
 
 
 Node* Cache::getResponse(Request request) {
@@ -17,9 +17,13 @@ void Cache::putResponse(Request request, Response response) {
   std::string URI = request.getURI();
   while (pointer != NULL) {
     if (pointer->URI == URI) {
+      //  if(size - (pointer->response).getMessageLen() + response.getMessageLen() > capacity){
+      //   //remove first node of linkedlist, problem: if removed node is exactly the node we need to update?
+      // }
       pointer->response = response;
       return;
     }
+    pointer = pointer->next;
   }
   // Add Node to the end of linkedlist
   Node *temp = new Node(URI, response);
@@ -48,26 +52,6 @@ void Cache::putResponse(Request request, Response response) {
   m.unlock();
 }
 
-int get_freshness_lifetime(std::string max_age, std::string expires,
-                           std::string last_modified, Request request,
-                           Response response) {
-  if (max_age != "") {
-    return convert_string2timet(max_age);
-  } else if (expires != "") {
-    time_t expire_time = convert_string2timet(expires);
-    time_t response_time = convert_string2timet(response.getDate());
-    return expire_time - response_time;
-  } else if (last_modified != "") {
-    time_t last_modified_time = convert_string2timet(last_modified);
-    time_t date = convert_string2timet(response.getDate());
-    time_t heuristic_lifetime = difftime(date, last_modified_time) / 10;
-    time_t current_age = get_current_age(request, response);
-    if (current_age > 24 * 60 * 60 && response.getWarning() == "") {
-      response.addHeaderField("warn-code", "133");
-    }
-    return heuristic_lifetime;
-  }
-}
 
 
 time_t convert_string2timet(std::string time) {
@@ -81,12 +65,10 @@ time_t convert_string2timet(std::string time) {
 }
 
 
-
-time_t get_current_age(Request request, Response response) {
+time_t get_current_age(time_t request_time, Response response) {
   time_t age_value = stoi(response.getAge());
   time_t date_value = convert_string2timet(response.getDate());
   time_t now = time(NULL);
-  time_t request_time = convert_string2timet(request.getDate());
   time_t response_time = convert_string2timet(response.getDate());
   time_t apparent_age =
       response_time - date_value < 0 ? 0 : response_time - date_value;
@@ -99,9 +81,31 @@ time_t get_current_age(Request request, Response response) {
   return current_age;
 }
 
+time_t get_freshness_lifetime(std::string max_age, std::string expires,
+                           std::string last_modified, time_t request_time,
+                           Response response) {
+  if (max_age != "") {
+    time_t a =  stoi(max_age);
+    return a;
+  } else if (expires != "") {
+    time_t expire_time = convert_string2timet(expires);
+    time_t response_time = convert_string2timet(response.getDate());
+    return expire_time - response_time;
+  } else if (last_modified != "") {
+    time_t last_modified_time = convert_string2timet(last_modified);
+    time_t date = convert_string2timet(response.getDate());
+    time_t heuristic_lifetime = difftime(date, last_modified_time) / 10;
+    time_t current_age = get_current_age(request_time, response);
+    if (current_age > 24 * 60 * 60 && response.getWarning() == "") {
+      response.addHeaderField("warn-code", "133");
+    }
+    return heuristic_lifetime;
+  }
+  return -1;
+}
 
-
-bool Cache::isFresh(Request request, Response response, int user_id) {
+// finish testing
+bool Cache::isFresh(Request request, int user_id, time_t request_time) {
   Node* response_node = this->getResponse(request);
   if (response_node == NULL) {
     std::cerr
@@ -111,14 +115,19 @@ bool Cache::isFresh(Request request, Response response, int user_id) {
   Response response_old = response_node->response;
   std::string cache_control = response_old.getCacheControl();
   if (cache_control == "") {
+    std::cout << "no cache_control" << std::endl;
     return false;
   } else {
     std::string max_age = response_old.getMaxAge();
     std::string expires = response_old.getExpires();
     std::string last_modified = response_old.getLastModified();
     int freshness_lifetime = get_freshness_lifetime(
-        max_age, expires, last_modified, request, response);
-    int current_age = get_current_age(request, response);
+        max_age, expires, last_modified, request_time, response_old);
+    int current_age = get_current_age(request_time, response_old);
+
+    std::cout << "freshness_lifetime is:" << freshness_lifetime<< std::endl;
+    std::cout << "current_age is:" << current_age <<std::endl;
+
     if (freshness_lifetime > current_age) {
       std::cout << "it is fresh" << std::endl;
       return true;
@@ -141,6 +150,7 @@ void print_expire(int user_id, Response response){
         time_t expire_age = date_age + max_age_int;
         struct tm *exp = gmtime(&expire_age);
         const char *expire_time_act = asctime(exp);
+        std::cout <<""<<std::endl;
         Logger::getLogger().proxyLog(user_id, ": cached, expires at " + std::string(expire_time_act));
     } else if (expires != "") {
         time_t expire_time = convert_string2timet(expires);
@@ -163,12 +173,14 @@ void Cache::revalidation(int user_id, Response response, Request request) {
   std::string etag = response.getEtag();
   std::string lastModified = response.getLastModified();
   // 1. Sending a Validation Request
-  TcpConnector tcp = TcpConnector();
   if (etag != "") {
+    std::cout << "etag" << std::endl;
     check_validation(request, response, user_id, "If-None-Match", etag);
   } else if (lastModified != "") {
+        std::cout << "last modified" << std::endl;
     check_validation(request, response, user_id, "If-Modified-Since", lastModified);
   } else {
+      std::cout << " else, resend" << std::endl;
     check_validation(request, response, user_id, "", "");
   }
 }
@@ -181,18 +193,21 @@ void Cache::check_validation(Request request, Response response, int user_id, st
   }else{
     Logger::getLogger().log("send again");
   }
+
+
   Request newRequest = request;
   if(tag != ""){
     newRequest.addHeaderField(tag, value);
   }
-  httpConnector.sendMessage(newRequest, false);
-  Response* newResponse = httpConnector.receiveResponse();
+  std::cout << newRequest << std::endl;
 
+  httpConnector.sendMessage(newRequest, false); // send the request to the server
+  Response* newResponse = httpConnector.receiveResponse(); // receive the new response from the server, and check
+  std::cout << newResponse->getStatusCode() << std::endl;
   if (newResponse->getStatusCode() == "304") {
     // respond from cache
     std::cout << "code = 304" << std::endl;
     respond_to_client(response, user_id);
-
   } else if (newResponse->getStatusCode() == "200") {
     std::cout << "cod = 200" << std::endl;
     //If the new response is cacheable
@@ -200,13 +215,14 @@ void Cache::check_validation(Request request, Response response, int user_id, st
       //Update response
       putResponse(request, *newResponse);
       if(newResponse->getCacheControl() != ""){
-        if (newResponse->getCacheControl().find("must-revalidate")!=-1){
+        if (newResponse->getCacheControl().find("must-revalidate")!= (long)(unsigned)-1){
             Logger::getLogger().proxyLog(user_id, ": cached, but requires re-validation" + value);
         }else{
             print_expire(user_id, response);
         }
       }
     }else{
+      std::cout << "code is neither 200 nor 304" << std::endl;
         if (newResponse->getCacheable()==""){
           Logger::getLogger().proxyLog(user_id, ": not cacheable because cache control not specified");
         }else{

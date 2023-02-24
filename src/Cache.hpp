@@ -6,6 +6,7 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include "Logger.h"
 
 class Node {
 public:
@@ -28,10 +29,11 @@ public:
   Node *tail;
   Cache(HttpConnector &httpConnector, size_t capacity, size_t size)
       : httpConnector(httpConnector), capacity(capacity), size(size) {}
+
   void usingCache(Request request, int user_id);
   Node* getResponse(Request request);
   void putResponse(Request request, Response response);
-  bool isFresh(Request request, Response response, int user_id);
+  bool isFresh(Request request, int user_id, time_t request_time);
 
   void revalidation(int user_id, Response response, Request request);
   void check_validation(Request request, Response response, int user_id, std::string tag, std::string value);

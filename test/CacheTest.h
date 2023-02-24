@@ -6,6 +6,9 @@
 class CacheTest : public UnitTest {
 public:
   void onRun() override;
+private:
+  void test_cache_map(std::string port = "4000");
 };
+
 
 #endif
