@@ -9,7 +9,3 @@ WORKDIR /http_proxy
 COPY . .
 
 EXPOSE 4000
-
-CMD ["make"]
-
-CMD ["./http_proxy"]
