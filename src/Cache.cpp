@@ -165,25 +165,25 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
   }
 }
 
-void Cache::revalidation(int user_id, Request request, Response response) {
+void Cache::revalidation(int user_id, Request request, Response response, HttpConnector& httpConnector) {
   std::string etag = response.getEtag();
   std::string lastModified = response.getLastModified();
   // 1. Sending a Validation Request
   if (etag != "") {
     std::cout << "etag" << std::endl;
-    check_validation(request, response, user_id, "If-None-Match", etag);
+    check_validation(request, response, user_id, "If-None-Match", etag, httpConnector);
   } else if (lastModified != "") {
     std::cout << "last modified" << std::endl;
     check_validation(request, response, user_id, "If-Modified-Since",
-                     lastModified);
+                     lastModified, httpConnector);
   } else {
     std::cout << " else, resend" << std::endl;
-    check_validation(request, response, user_id, "", "");
+    check_validation(request, response, user_id, "", "", httpConnector);
   }
 }
 
 void Cache::check_validation(Request request, Response response, int user_id,
-                             std::string tag, std::string value) {
+                             std::string tag, std::string value, HttpConnector &httpConnector) {
   if (tag == "If-None-Match") {
     Logger::getLogger().proxyLog(user_id, ": NOTE ETag: " + value);
   } else if (tag == "If-Modified-Since") {
@@ -209,7 +209,7 @@ void Cache::check_validation(Request request, Response response, int user_id,
     // respond from cache
     std::cout << "code = 304" << std::endl;
     Logger::getLogger().proxyLog(user_id, ": NOTE the status code is 304");
-    respond_to_client(response, user_id);
+    respond_to_client(response, user_id, httpConnector);
   } else if (newResponse->getStatusCode() == "200") {
     std::cout << "cod = 200" << std::endl;
     // If the new response is cacheable
@@ -234,11 +234,11 @@ void Cache::check_validation(Request request, Response response, int user_id,
                                                   newResponse->getCacheable());
       }
     }
-    respond_to_client(*newResponse, user_id);
+    respond_to_client(*newResponse, user_id, httpConnector);
   }
 }
 
-void Cache::respond_to_client(Response response, int user_id) {
+void Cache::respond_to_client(Response response, int user_id, HttpConnector& httpConnector) {
   httpConnector.sendMessage(response, true);
   std::string first = response.getFirstLine();
   Logger::getLogger().proxyLog(user_id, ": Responding " + first);

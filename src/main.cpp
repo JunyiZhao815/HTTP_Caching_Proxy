@@ -1,7 +1,8 @@
 #include "HttpProxy.h"
 
 int main() {
-  HttpProxy httpProxy;
+  Cache cache(3, 0);
+  HttpProxy httpProxy(cache);
   httpProxy.init("4000");
   httpProxy.multiThread();
   // httpProxy.noneMultiThread();

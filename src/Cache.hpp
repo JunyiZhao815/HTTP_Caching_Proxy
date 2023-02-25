@@ -1,3 +1,6 @@
+#ifndef __CACHE_HPP__
+#define __CACHE_HPP__
+
 #include "HttpConnector.h"
 #include "Logger.h"
 #include "Request.h"
@@ -19,8 +22,6 @@ public:
 // Must define it after httpConnector, otherwise the httpConnector inside of
 // cache class will be empty.
 class Cache {
-private:
-  HttpConnector httpConnector;
 
 private:
   void print_expire(int user_id, Response response, std::string words);
@@ -33,8 +34,7 @@ public:
   size_t size;
   Node *head;
   Node *tail;
-  Cache(HttpConnector &httpConnector, size_t capacity, size_t size)
-      : httpConnector(httpConnector), capacity(capacity), size(size) {}
+  Cache(size_t capacity, size_t size) : capacity(capacity), size(size) {}
 
   /*
   It is used to get the response from map
@@ -72,22 +72,25 @@ public:
   @param: the request is the current request that the client made
   @param: the response is the stored response in the map
   */
-  void revalidation(int user_id, Request request, Response response);
+  void revalidation(int user_id, Request request, Response response, HttpConnector& httpConnector);
 
   /*
   It is helper function of revalidation(), do not use it in other class.
   */
   void check_validation(Request request, Response response, int user_id,
-                        std::string tag, std::string value);
+                        std::string tag, std::string value,
+                        HttpConnector &httpConnector);
 
   /*
   send the response to the client, do not use it because it is already inside of
   revalidation();
   */
-  void respond_to_client(Response response, int user_id);
+  void respond_to_client(Response response, int user_id, HttpConnector& httpConnector);
 
   /*
   check if the current response is cacheable
   */
   bool isCacheable(Response response);
 };
+
+#endif

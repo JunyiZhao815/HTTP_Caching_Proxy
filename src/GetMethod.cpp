@@ -2,20 +2,20 @@
 
 void GetMethod::takeAction(HttpConnector &httpConnector, Request &request) {
   // filter invalid field in get method
-  filter(request);
+  // filter(request);
 
-  // send request to server
-  httpConnector.sendRequest(&request);
-  // receive response from server
-  Response *response = httpConnector.receiveResponse();
-  // send response to client
-  try {
-    httpConnector.sendResponse(response);
-  } catch (std::runtime_error &e) {
-    delete response;
-    throw;
-  }
-  delete response;
+  // // send request to server
+  // httpConnector.sendRequest(&request);
+  // // receive response from server
+  // Response *response = httpConnector.receiveResponse();
+  // // send response to client
+  // try {
+  //   httpConnector.sendResponse(response);
+  // } catch (std::runtime_error &e) {
+  //   delete response;
+  //   throw;
+  // }
+  // delete response;
 }
 
 void GetMethod::filter(Request &request) {
@@ -25,5 +25,40 @@ void GetMethod::filter(Request &request) {
 }
 
 void GetMethod::_expect() {
-  throw std::invalid_argument("400|ERROR Expect field is not valid in Get Method");
+  throw std::invalid_argument(
+      "400|ERROR Expect field is not valid in Get Method");
+}
+
+void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
+                           Cache &cache) {
+  filter(request);
+  Response *response = NULL;
+  Node *node = cache.getResponse(request);
+  if (node != NULL) {
+    time_t request_time = time(NULL);
+    if (cache.isFresh(request, httpConnector.getClientId(), request_time)) {
+      response = &node->response;
+    } else {
+      cache.revalidation(httpConnector.getClientId(), request, node->response,
+                         httpConnector);
+      return;
+    }
+  } else {
+    // send request to server
+    httpConnector.sendRequest(&request);
+    // receive response from server
+    response = httpConnector.receiveResponse();
+    if (cache.isCacheable(*response)) {
+      cache.putResponse(request, *response);
+    }
+  }
+
+  // send response to client
+  try {
+    httpConnector.sendResponse(response);
+  } catch (std::runtime_error &e) {
+    delete response;
+    throw;
+  }
+  delete response;
 }

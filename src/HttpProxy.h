@@ -1,5 +1,6 @@
 #ifndef __HTTP_PROXY_H__
 #define __HTTP_PROXY_H__
+#include "Cache.hpp"
 #include "ConnectMethod.h"
 #include "GetMethod.h"
 #include "HttpConnector.h"
@@ -8,16 +9,17 @@
 #include <boost/asio/post.hpp>
 #include <boost/asio/thread_pool.hpp>
 #include <cassert>
-#include <thread>
-#include <ctime>
 #include <chrono>
+#include <ctime>
 #include <iomanip>
+#include <thread>
 
 class HttpProxy {
 private:
   int proxy_fd;
   TcpConnector tcpConnector;
   size_t threadPoolSize;
+  Cache &cache;
 
 private:
   std::mutex id_mutex;
@@ -29,7 +31,8 @@ private:
   /*
    * Set client socket fd recv timeout
    */
-  void setClientSocketFdRecvTimeout(int client_socket_fd, struct timeval timeout);
+  void setClientSocketFdRecvTimeout(int client_socket_fd,
+                                    struct timeval timeout);
 
   /*
    * Assign client id to client
@@ -42,7 +45,7 @@ private:
    * exception: format: status_code|reason
    */
   void parseInvalidArgExp(const std::string &exception,
-                          std::string &status_code, std::string& reason);
+                          std::string &status_code, std::string &reason);
 
   /*
    * Send error status to client when exception occur
@@ -72,7 +75,7 @@ private:
   /*
    * Log new request information to log file
    */
-  void logNewRequest(int client_socket_fd, Request& request, int id);
+  void logNewRequest(int client_socket_fd, Request &request, int id);
 
   std::string getCurrUTCtime();
 
@@ -93,7 +96,7 @@ public:
    */
   void multiThread();
 
-  HttpProxy();
+  HttpProxy(Cache &cache);
 };
 
 #endif

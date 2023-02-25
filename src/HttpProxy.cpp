@@ -2,7 +2,7 @@
 
 size_t HttpProxy::next_client_id = 1;
 
-HttpProxy::HttpProxy() : threadPoolSize(20) {}
+HttpProxy::HttpProxy(Cache &cache) : threadPoolSize(20), cache(cache) {}
 
 size_t HttpProxy::assignClientId() {
   size_t id;
@@ -34,7 +34,7 @@ void HttpProxy::methodAct(const std::string &method,
     throw std::invalid_argument("405|ERROR Method not support");
   }
   std::unique_ptr<HttpMethod> method_ptr(httpMethod);
-  method_ptr->takeAction(httpConnector, request);
+  method_ptr->takeAction(httpConnector, request, cache);
 }
 
 void HttpProxy::parseInvalidArgExp(const std::string &exception,
@@ -53,7 +53,8 @@ void HttpProxy::_exec(int client_socket_fd, int client_id) {
   try {
     // receive client request
     Request *request = httpConnector.receiveRequest();
-    logNewRequest(client_socket_fd, *request, client_id);// log new request information
+    logNewRequest(client_socket_fd, *request,
+                  client_id); // log new request information
     std::unique_ptr<Request> req_ptr(request);
     std::pair<std::string, std::string> ip_port = req_ptr->getHost();
     // connect with server
@@ -100,7 +101,7 @@ void HttpProxy::sendErrorStatus(const std::string &status_code,
 void HttpProxy::noneMultiThread() {
   int client_socket_fd = tcpConnector.waitAcceptConnect(proxy_fd);
   exec(client_socket_fd);
-  //close(client_socket_fd);
+  // close(client_socket_fd);
 }
 
 void HttpProxy::multiThread() {
@@ -128,16 +129,17 @@ void HttpProxy::setClientSocketFdRecvTimeout(int client_socket_fd,
              sizeof(timeout));
 }
 
-void HttpProxy::logNewRequest(int client_socket_fd, Request& request, int id){
+void HttpProxy::logNewRequest(int client_socket_fd, Request &request, int id) {
   TcpConnector tcpConnector;
   std::string requestIp = tcpConnector.getIpByFd(client_socket_fd);
-  std::string logInfo = "\"" + request.getFirstLine() + "\" from " + requestIp + " @ ";
+  std::string logInfo =
+      "\"" + request.getFirstLine() + "\" from " + requestIp + " @ ";
   std::string currTime = getCurrUTCtime();
   logInfo += currTime;
   Logger::getLogger().proxyLog(id, logInfo);
 }
 
-std::string HttpProxy::getCurrUTCtime(){
+std::string HttpProxy::getCurrUTCtime() {
   std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
   std::time_t utc_time = std::chrono::system_clock::to_time_t(now);
   std::tm utc_tm = *std::gmtime(&utc_time);
