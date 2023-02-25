@@ -9,6 +9,9 @@
 #include <boost/asio/thread_pool.hpp>
 #include <cassert>
 #include <thread>
+#include <ctime>
+#include <chrono>
+#include <iomanip>
 
 class HttpProxy {
 private:
@@ -39,7 +42,7 @@ private:
    * exception: format: status_code|reason
    */
   void parseInvalidArgExp(const std::string &exception,
-                          std::string &status_code, std::string reason);
+                          std::string &status_code, std::string& reason);
 
   /*
    * Send error status to client when exception occur
@@ -65,6 +68,13 @@ private:
    */
   void methodAct(const std::string &method, HttpConnector &httpConnector,
                  Request &request);
+
+  /*
+   * Log new request information to log file
+   */
+  void logNewRequest(int client_socket_fd, Request& request, int id);
+
+  std::string getCurrUTCtime();
 
 public:
   /*

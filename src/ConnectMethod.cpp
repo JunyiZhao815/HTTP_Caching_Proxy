@@ -9,4 +9,7 @@ void ConnectMethod::takeAction(HttpConnector &httpConnector, Request& request) {
 
   // create tunnel and send data between client and server
   httpConnector.tunnelTransport();
+
+  // tell that tunnel closed
+  Logger::getLogger().proxyLog(httpConnector.getClientId(), "Tunnel closed");
 }

@@ -21,12 +21,18 @@ Request *HttpConnector::receiveRequest() {
   size_t msglen;
   Request *request = NULL;
   while (request == NULL) {
-    void *msg = tcpConnector.receiveMessage(client_socket_fd, msglen);
+    void *msg = NULL;
+    try{
+      msg = tcpConnector.receiveMessage(client_socket_fd, msglen);
+    }catch(std::runtime_error& e){
+      throw std::invalid_argument("408|ERROR Stop receive request due to timeout");
+    }
+    //void *msg = tcpConnector.receiveMessage(client_socket_fd, msglen);
     request = httpParser.parseRequest((char *)msg, msglen);
     // package is not complete but client close connection
     if(msglen == 0 && request == NULL){
       free(msg);
-      throw std::runtime_error("Client close connection");
+      throw std::runtime_error("NOTE User agent closed connection");
     }
     free(msg);
   }
@@ -38,11 +44,17 @@ Response *HttpConnector::receiveResponse() {
   size_t msglen;
   Response *response = NULL;
   while (response == NULL) {
-    void *msg = tcpConnector.receiveMessage(server_socket_fd, msglen);
+    void* msg = NULL;
+    try{
+      msg = tcpConnector.receiveMessage(server_socket_fd, msglen);
+    }catch(std::runtime_error& e){
+      throw std::invalid_argument("504|ERROR Stop receive response from origin server due to timeout");
+    }
     response = httpParser.parseResponse((char *)msg, msglen);
     if(msglen == 0 && response == NULL){
       free(msg);
-      throw std::runtime_error("Server close connection");
+      //throw std::runtime_error("Server close connection");
+      throw std::invalid_argument("502|ERROR Origin server close connection");
     }
     free(msg);
   }
@@ -52,8 +64,12 @@ Response *HttpConnector::receiveResponse() {
 void HttpConnector::sendRequest(const Request *request) {
   std::stringstream ss;
   ss << *request;
-  tcpConnector.sendMessage(server_socket_fd, ss.str().c_str(),
-                           ss.str().length());
+  try{
+    tcpConnector.sendMessage(server_socket_fd, ss.str().c_str(), ss.str().length());
+  }catch(std::runtime_error& e){
+    throw std::invalid_argument("500|Fail to send request to server");
+  }
+  
 }
 
 void HttpConnector::sendResponse(const Response *response) {
@@ -105,10 +121,11 @@ void HttpConnector::tunnelTransport() {
         return;
       }
     } else if(event_nums == 0){
-      throw std::runtime_error("Tunnel closed between client and server due to timeout");
+      //throw std::runtime_error("Tunnel closed between client and server due to timeout");
+      throw std::runtime_error("Tunnel closed");
     }else{
-      throw std::runtime_error(
-          "Tunnel closed between client and server by accident");
+      //throw std::runtime_error("Tunnel closed between client and server by accident");
+      throw std::runtime_error("Tunnel closed");
     }
   }
 }

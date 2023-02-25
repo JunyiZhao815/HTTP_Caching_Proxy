@@ -6,4 +6,4 @@ http_proxy:
 
 .PHONY: clean
 clean:
-	rm -f *~ *.out http_proxy
+	rm -f *~ *.out http_proxy proxy.log

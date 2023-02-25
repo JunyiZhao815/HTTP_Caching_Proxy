@@ -2,14 +2,14 @@
 #include <sstream>
 
 void TcpConnector::commonError(const std::string &description) {
-  std::string errmsg = "Error: " + description;
+  std::string errmsg = "ERROR " + description;
   throw std::runtime_error(errmsg);
 }
 
 void TcpConnector::error(const std::string &hostname, const std::string &port,
                          const std::string &description) {
   std::string errmsg =
-      "Error: " + description + " (" + hostname + ", " + port + ")";
+      "ERROR " + description + " (" + hostname + ", " + port + ")";
   throw std::runtime_error(errmsg);
 }
 
@@ -26,22 +26,22 @@ int TcpConnector::initializeServerSocket(const char *port) {
 
   status = getaddrinfo(hostname, port, &host_info, &host_info_list);
   if (status != 0) {
-    error(hostname, port, "cannot get address info for host");
+    error(hostname, port, "Cannot get address info for host");
   }
   socket_fd = socket(host_info_list->ai_family, host_info_list->ai_socktype,
                      host_info_list->ai_protocol);
   if (socket_fd == -1) {
-    error(hostname, port, "cannot create socket");
+    error(hostname, port, "Cannot create socket");
   }
   int yes = 1;
   status = setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
   status = bind(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
   if (status == -1) {
-    error(hostname, port, "cannot bind socket");
+    error(hostname, port, "Cannot bind socket");
   }
   status = listen(socket_fd, BACKLOG);
   if (status == -1) {
-    error(hostname, port, "cannot listen on socket");
+    error(hostname, port, "Cannot listen on socket");
   }
   freeaddrinfo(host_info_list);
   return socket_fd;
@@ -59,17 +59,18 @@ int TcpConnector::initializeClientSocket(const char *hostname,
 
   status = getaddrinfo(hostname, port, &host_info, &host_info_list);
   if (status != 0) {
-    error(hostname, port, "cannot get address info for host");
+    //error(hostname, port, "Cannot get address info for host");
+    throw std::invalid_argument("400|ERROR Cannot get address info for host");
   }
   socket_fd = socket(host_info_list->ai_family, host_info_list->ai_socktype,
                      host_info_list->ai_protocol);
   if (socket_fd == -1) {
-    error(hostname, port, "cannot create socket");
+    error(hostname, port, "Cannot create socket");
   }
   status =
       connect(socket_fd, host_info_list->ai_addr, host_info_list->ai_addrlen);
   if (status == -1) {
-    error(hostname, port, "cannot connect to socket");
+    error(hostname, port, "Cannot connect to socket");
   }
   freeaddrinfo(host_info_list);
   return socket_fd;
@@ -81,7 +82,7 @@ int TcpConnector::waitAcceptConnect(int socket_fd) {
   int client_connection_fd =
       accept(socket_fd, (struct sockaddr *)&addr, &socket_addr_len);
   if (client_connection_fd == -1) {
-    commonError("cannot accept connection on socket");
+    commonError("Cannot accept connection on socket");
   }
   return client_connection_fd;
 }
@@ -109,7 +110,14 @@ void TcpConnector::sendMessage(const int sockfd, const void *msg,
   int status = send(sockfd, msg, len, 0);
   if (status == -1) {
     std::stringstream ss;
-    ss << "send message fail, reason:" << strerror(errno);
+    ss << "Send message fail, reason:" << strerror(errno);
     commonError(ss.str());
   }
+}
+
+std::string TcpConnector::getIpByFd(int socket_fd){
+  struct sockaddr_in sock_addr;
+  socklen_t len;
+  getpeername(socket_fd, (struct sockaddr*)&sock_addr, &len);
+  return inet_ntoa(sock_addr.sin_addr);
 }

@@ -8,4 +8,6 @@ WORKDIR /http_proxy
 
 COPY . .
 
+RUN chmod +x /http_proxy/main_run.sh
+
 EXPOSE 4000

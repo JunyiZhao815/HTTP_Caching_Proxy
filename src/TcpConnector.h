@@ -61,6 +61,12 @@ public:
    * @len length of msg
    */
   void sendMessage(const int sockfd, const void *msg, const size_t len);
+
+  /*
+   * Get ip address by socket fd
+   * @return ip address
+   */
+  std::string getIpByFd(int socket_fd);
 };
 
 #endif

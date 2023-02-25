@@ -1,6 +1,7 @@
 #ifndef __HTTP_METHOD_H__
 #define __HTTP_METHOD_H__
 #include "HttpConnector.h"
+#include "Logger.h"
 
 class HttpMethod {
 public:

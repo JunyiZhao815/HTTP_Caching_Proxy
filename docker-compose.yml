@@ -7,4 +7,4 @@ services:
       - '12345:4000'
     volumes:
       - ./logs:/var/log/erss
-    command: /bin/sh -c "/http_proxy/make_run.sh"
+    command: /bin/sh -c "/http_proxy/main_run.sh"

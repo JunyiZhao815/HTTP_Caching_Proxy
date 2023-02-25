@@ -24,7 +24,7 @@ std::string HttpMessage::getVersion() const {
 
 void HttpMessage::checkHasField(const std::string &name) const {
   if (header.find(name) == header.end()) {
-    std::string errmsg = "400|No " + name + " field in head";
+    std::string errmsg = "400|ERROR No " + name + " field in head";
     throw std::invalid_argument(errmsg);
   }
 }

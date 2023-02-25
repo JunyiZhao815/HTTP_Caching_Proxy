@@ -31,7 +31,7 @@ void HttpProxy::methodAct(const std::string &method,
     std::cout << "Method not support, cid:" << httpConnector.getClientId()
               << std::endl;
 #endif
-    throw std::invalid_argument("405|Method not support");
+    throw std::invalid_argument("405|ERROR Method not support");
   }
   std::unique_ptr<HttpMethod> method_ptr(httpMethod);
   method_ptr->takeAction(httpConnector, request);
@@ -39,9 +39,11 @@ void HttpProxy::methodAct(const std::string &method,
 
 void HttpProxy::parseInvalidArgExp(const std::string &exception,
                                    std::string &status_code,
-                                   std::string reason) {
+                                   std::string &reason) {
   size_t index = exception.find('|');
+#ifdef DEBUG
   assert(index != std::string::npos);
+#endif
   status_code = exception.substr(0, index);
   reason = exception.substr(index + 1);
 }
@@ -51,6 +53,7 @@ void HttpProxy::_exec(int client_socket_fd, int client_id) {
   try {
     // receive client request
     Request *request = httpConnector.receiveRequest();
+    logNewRequest(client_socket_fd, *request, client_id);// log new request information
     std::unique_ptr<Request> req_ptr(request);
     std::pair<std::string, std::string> ip_port = req_ptr->getHost();
     // connect with server
@@ -101,7 +104,6 @@ void HttpProxy::noneMultiThread() {
 }
 
 void HttpProxy::multiThread() {
-  //boost::asio::thread_pool pool(threadPoolSize);
   while (true) {
     try {
       int client_socket_fd = tcpConnector.waitAcceptConnect(proxy_fd);
@@ -112,8 +114,6 @@ void HttpProxy::multiThread() {
                                    timeout); // set recv only wait specify secs
       std::thread t(&HttpProxy::exec, this, client_socket_fd);
       t.detach();
-      //boost::asio::post(pool,
-       //                 std::bind(&HttpProxy::exec, this, client_socket_fd));
     } catch (std::runtime_error &e) {
       Logger::getLogger().log(e.what());
     } catch (std::exception &e) {
@@ -126,4 +126,22 @@ void HttpProxy::setClientSocketFdRecvTimeout(int client_socket_fd,
                                              struct timeval timeout) {
   setsockopt(client_socket_fd, SOL_SOCKET, SO_RCVTIMEO, &timeout,
              sizeof(timeout));
+}
+
+void HttpProxy::logNewRequest(int client_socket_fd, Request& request, int id){
+  TcpConnector tcpConnector;
+  std::string requestIp = tcpConnector.getIpByFd(client_socket_fd);
+  std::string logInfo = "\"" + request.getFirstLine() + "\" from " + requestIp + " @ ";
+  std::string currTime = getCurrUTCtime();
+  logInfo += currTime;
+  Logger::getLogger().proxyLog(id, logInfo);
+}
+
+std::string HttpProxy::getCurrUTCtime(){
+  std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+  std::time_t utc_time = std::chrono::system_clock::to_time_t(now);
+  std::tm utc_tm = *std::gmtime(&utc_time);
+  std::stringstream ss;
+  ss << std::put_time(&utc_tm, "%a %b %d %T %Y");
+  return ss.str();
 }

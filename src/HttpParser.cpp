@@ -38,7 +38,7 @@ Request *HttpParser::parseRequest(const char *msg, const size_t len) {
   if (ec == http::error::need_more || ec.value() == 0) {
     ec.clear();
   } else {
-    std::string errmsg = "400|" + ec.message();
+    std::string errmsg = "400|ERROR " + ec.message();
     throw std::invalid_argument(errmsg);
   }
   return NULL;
@@ -93,7 +93,7 @@ Response *HttpParser::parseResponse(const char *msg, const size_t len) {
   if (ec == http::error::need_more || ec.value() == 0) {
     ec.clear();
   } else {
-    std::string errmsg = "400|" + ec.message();
+    std::string errmsg = "502|ERROR " + ec.message();
     throw std::invalid_argument(errmsg);
   }
   return NULL;
