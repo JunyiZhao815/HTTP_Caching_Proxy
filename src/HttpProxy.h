@@ -18,7 +18,6 @@ class HttpProxy {
 private:
   int proxy_fd;
   TcpConnector tcpConnector;
-  size_t threadPoolSize;
   Cache &cache;
 
 private:

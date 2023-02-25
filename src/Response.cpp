@@ -27,19 +27,19 @@ std::ostream &operator<<(std::ostream &out, const Response response) {
 }
 
 std::string Response::getExpires() {
-  try{
+  try {
     checkHasField("expires");
     return header["expires"];
-  }catch(std::invalid_argument &e){
+  } catch (std::invalid_argument &e) {
     return "";
   }
 }
 
 std::string Response::getLastModified() {
-  try{
+  try {
     checkHasField("last-modified");
     return header["last-modified"];
-  }catch(std::invalid_argument &e){
+  } catch (std::invalid_argument &e) {
     return "";
   }
 }
@@ -53,37 +53,37 @@ std::string Response::message2string() {
 std::string Response::getStatusCode() { return status_code; }
 
 std::string Response::getEtag() {
-  try{
+  try {
     checkHasField("etag");
     return header["etag"];
-  }catch(std::invalid_argument &e){
+  } catch (std::invalid_argument &e) {
     return "";
   }
 }
 
 std::string Response::getTransferEncoding() {
-  try{
+  try {
     checkHasField("transfer-encoding");
     return header["transfer-encoding"];
-  }catch(std::invalid_argument &e){
+  } catch (std::invalid_argument &e) {
     return "";
   }
 }
 
 std::string Response::getAge() {
-  try{
+  try {
     checkHasField("age");
     return header["age"];
-  }catch(std::invalid_argument &e){
+  } catch (std::invalid_argument &e) {
     return "0";
   }
 }
 
 std::string Response::getWarning() {
-  try{
+  try {
     checkHasField("warn-code");
     return header["warn-code"];
-  }catch(std::invalid_argument &e){
+  } catch (std::invalid_argument &e) {
     return "";
   }
 }
@@ -112,5 +112,8 @@ std::string Response::getFirstLine() {
   return firstLine;
 }
 
-
 size_t Response::getContentLen() { return body.length(); }
+
+void Response::setStatus(std::string status) { this->status_code = status; }
+
+void Response::setReason(std::string reason) { this->reason = reason; }

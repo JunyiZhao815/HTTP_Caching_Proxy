@@ -6,6 +6,7 @@ void GetMethodTest::onRun() {
 }
 
 void GetMethodTest::test_simple_get(std::string port) {
+  Cache cache(100, 0);
   TcpConnector tcpConnector;
   HttpParser httpParser;
   // wait client connect
@@ -26,7 +27,7 @@ void GetMethodTest::test_simple_get(std::string port) {
   std::cout << "connect to server (" << ip_port.first << ", " << ip_port.second
             << ") successfully\n";
   GetMethod getMethod;
-  getMethod.takeAction(httpConnector, *request);
+  getMethod.takeAction(httpConnector, *request, cache);
 
   close(c_fd);
   close(s_fd);
@@ -35,6 +36,7 @@ void GetMethodTest::test_simple_get(std::string port) {
 }
 
 void GetMethodTest::test_get_by_while(std::string port) {
+  Cache cache(100, 0);
   TcpConnector tcpConnector;
   HttpParser httpParser;
   // wait client connect
@@ -56,7 +58,7 @@ void GetMethodTest::test_get_by_while(std::string port) {
     std::cout << "connect to server (" << ip_port.first << ", "
               << ip_port.second << ") successfully\n";
     GetMethod getMethod;
-    getMethod.takeAction(httpConnector, *request);
+    getMethod.takeAction(httpConnector, *request, cache);
 
     close(c_fd);
     close(s_fd);

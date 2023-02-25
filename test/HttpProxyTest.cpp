@@ -6,8 +6,8 @@ void HttpProxyTest::onRun() {
 }
 
 void HttpProxyTest::test_single_thread_proxy(std::string port) {
-
-  HttpProxy httpProxy;
+  Cache cache(100, 0);
+  HttpProxy httpProxy(cache);
   httpProxy.init(port);
   while (true) {
     httpProxy.noneMultiThread();
@@ -15,7 +15,8 @@ void HttpProxyTest::test_single_thread_proxy(std::string port) {
 }
 
 void HttpProxyTest::test_multi_thread_proxy(std::string port) {
-  HttpProxy httpProxy;
+  Cache cache(100, 0);
+  HttpProxy httpProxy(cache);
   httpProxy.init(port);
   httpProxy.multiThread();
 }

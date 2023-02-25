@@ -2,7 +2,7 @@
 
 size_t HttpProxy::next_client_id = 1;
 
-HttpProxy::HttpProxy(Cache &cache) : threadPoolSize(20), cache(cache) {}
+HttpProxy::HttpProxy(Cache &cache) : cache(cache) {}
 
 size_t HttpProxy::assignClientId() {
   size_t id;

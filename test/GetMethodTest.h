@@ -2,6 +2,7 @@
 #define __GET_METHOD_TEST_H__
 #include "../src/GetMethod.h"
 #include "../src/test/UnitTest.h"
+#include "../src/Cache.hpp"
 
 class GetMethodTest : public UnitTest {
 public:

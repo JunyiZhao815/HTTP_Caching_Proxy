@@ -20,7 +20,7 @@ public:
   /*
    * Transform request to string
    */
-  std::string message2string();
+  std::string message2string() override;
 
   /*
    * Get Expires (expires) field from header
@@ -50,5 +50,9 @@ public:
    * Calculate content length, without calculating the header and first line
    */
   size_t getContentLen();
+
+  void setStatus(std::string status);
+
+  void setReason(std::string reason);
 };
 #endif
