@@ -40,14 +40,14 @@ public:
   It is used to get the response from map
   If we get the response successfully, return the node*, else return null;
   */
-  Node *getResponse(Request request);
+  Node *getResponse(Request request, size_t user_id);
 
   /*
   Put the pair<URI, node*> into the map
   Also append the linkedlist.
   If linkedlist excceeds the capacity, removes the head node.
   */
-  void putResponse(Request request, Response response);
+  void putResponse(Request request, Response response, size_t user_id);
 
   /*
   Check if the response is fresh, return true if fresh, else false

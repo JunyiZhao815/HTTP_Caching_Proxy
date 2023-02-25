@@ -5,17 +5,22 @@
 #include <fstream>
 #include <iostream>
 
-Node *Cache::getResponse(Request request) {
+Node *Cache::getResponse(Request request, size_t user_id) {
+  Logger::getLogger().proxyLog(user_id, "NOTE trying to get response from cache");
   std::string URI = request.getURI();
   return map[URI];
 }
 
-void Cache::putResponse(Request request, Response response) {
+void Cache::putResponse(Request request, Response response, size_t user_id) {
   m.lock();
+  Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache");
   Node *pointer = head;
   std::string URI = request.getURI();
+  Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2");
+
   while (pointer != NULL) {
     if (pointer->URI == URI) {
+
       //  if(size - (pointer->response).getMessageLen() +
       //  response.getMessageLen() > capacity){
       //   //remove first node of linkedlist, problem: if removed node is
@@ -26,6 +31,8 @@ void Cache::putResponse(Request request, Response response) {
     }
     pointer = pointer->next;
   }
+  Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 3");
+
   // Add Node to the end of linkedlist
   Node *temp = new Node(URI, response);
   if (size == 0) {
@@ -38,6 +45,8 @@ void Cache::putResponse(Request request, Response response) {
   }
   map[URI] = temp;
   ++size;
+    Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 4");
+
   // Delete the first Node if the size excceed the capacity
   if (this->size > capacity) {
     Node *first = head;
@@ -50,6 +59,8 @@ void Cache::putResponse(Request request, Response response) {
     }
     --size;
   }
+    Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 5");
+
   m.unlock();
 }
 
@@ -104,7 +115,7 @@ time_t get_freshness_lifetime(std::string max_age, std::string expires,
 
 // finish testing
 bool Cache::isFresh(Request request, int user_id, time_t request_time) {
-  Node *response_node = this->getResponse(request);
+  Node *response_node = this->getResponse(request, user_id);
   if (response_node == NULL) {
     std::cerr
         << "Cannot find the response you are trying to check freshing or not"
@@ -128,11 +139,11 @@ bool Cache::isFresh(Request request, int user_id, time_t request_time) {
 
     if (freshness_lifetime > current_age) {
       std::cout << "it is fresh" << std::endl;
-      print_expire(user_id, response_old, ": in cache, but expired at ");
+      print_expire(user_id, response_old, "in cache, but expired at ");
       return true;
     } else {
       std::cout << "it is not fresh" << std::endl;
-      print_expire(user_id, response_old, ": in cache, requires validation");
+      Logger::getLogger().proxyLog(user_id,"in cache, requires validation");
       return false;
     }
   }
@@ -177,17 +188,19 @@ void Cache::revalidation(int user_id, Request request, Response response, HttpCo
     check_validation(request, response, user_id, "If-Modified-Since",
                      lastModified, httpConnector);
   } else {
-    std::cout << " else, resend" << std::endl;
+    std::cout << "else, resend" << std::endl;
     check_validation(request, response, user_id, "", "", httpConnector);
   }
+  Logger::getLogger().proxyLog(user_id,"NOTE finish revalidation");
+
 }
 
 void Cache::check_validation(Request request, Response response, int user_id,
                              std::string tag, std::string value, HttpConnector &httpConnector) {
   if (tag == "If-None-Match") {
-    Logger::getLogger().proxyLog(user_id, ": NOTE ETag: " + value);
+    Logger::getLogger().proxyLog(user_id, "NOTE ETag: " + value);
   } else if (tag == "If-Modified-Since") {
-    Logger::getLogger().proxyLog(user_id, ":E Last-Modified: " + value);
+    Logger::getLogger().proxyLog(user_id, "NOTE Last-Modified: " + value);
   } else {
     Logger::getLogger().proxyLog(user_id, "send again");
   }
@@ -208,14 +221,16 @@ void Cache::check_validation(Request request, Response response, int user_id,
   if (newResponse->getStatusCode() == "304") {
     // respond from cache
     std::cout << "code = 304" << std::endl;
-    Logger::getLogger().proxyLog(user_id, ": NOTE the status code is 304");
+    Logger::getLogger().proxyLog(user_id, "NOTE the status code is 304");
+    std::string new_firstLine = newResponse->getFirstLine();
+    
     respond_to_client(response, user_id, httpConnector);
   } else if (newResponse->getStatusCode() == "200") {
     std::cout << "cod = 200" << std::endl;
     // If the new response is cacheable
     if (newResponse->getCacheable() == "yes") {
       // Update response
-      putResponse(request, *newResponse);
+      putResponse(request, *newResponse, user_id);
       if (newResponse->getCacheControl() != "") {
         if (newResponse->getCacheControl().find("must-revalidate") !=
             (long)(unsigned)-1) {
@@ -241,7 +256,7 @@ void Cache::check_validation(Request request, Response response, int user_id,
 void Cache::respond_to_client(Response response, int user_id, HttpConnector& httpConnector) {
   httpConnector.sendMessage(response, true);
   std::string first = response.getFirstLine();
-  Logger::getLogger().proxyLog(user_id, ": Responding " + first);
+  Logger::getLogger().proxyLog(user_id, "Responding " + first);
 }
 
 bool Cache::isCacheable(Response response) {

@@ -31,9 +31,12 @@ void GetMethod::_expect() {
 
 void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
                            Cache &cache) {
+    Logger::getLogger().proxyLog(0, "NOTE trying put response into cache 0");
   filter(request);
+    Logger::getLogger().proxyLog(1, "NOTE trying put response into cache 1");
+
   Response *response = NULL;
-  Node *node = cache.getResponse(request);
+  Node *node = cache.getResponse(request, httpConnector.getClientId());
   if (node != NULL) {
     time_t request_time = time(NULL);
     if (cache.isFresh(request, httpConnector.getClientId(), request_time)) {
@@ -44,12 +47,14 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
       return;
     }
   } else {
+    Logger::getLogger().proxyLog(httpConnector.getClientId(), "not in cache");
     // send request to server
     httpConnector.sendRequest(&request);
     // receive response from server
     response = httpConnector.receiveResponse();
     if (cache.isCacheable(*response)) {
-      cache.putResponse(request, *response);
+      cache.putResponse(request, *response, httpConnector.getClientId());
+    }else{
     }
   }
 
