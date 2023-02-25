@@ -13,8 +13,6 @@ void CacheTest::test_cache_map(std::string port)
   int fd = tcpConnector.initializeServerSocket(port.c_str());
   int c_fd = tcpConnector.waitAcceptConnect(fd);
   HttpConnector httpConnector(c_fd, 1);
-  // Cache define
-  Cache cache(httpConnector, 3, 0);
   // receive client request
   Request *request = httpConnector.receiveRequest();
   // get request date
@@ -38,7 +36,8 @@ void CacheTest::test_cache_map(std::string port)
   std::cout << *response << std::endl;
   //  send back response to client
   httpConnector.sendResponse(response);
-
+  // Cache define
+  Cache cache(httpConnector, 3, 0);
   cache.putResponse(*request, *response);
   std::map<std::string, Node*>::iterator it = cache.map.begin();
   while(it != cache.map.end()){
@@ -49,7 +48,9 @@ void CacheTest::test_cache_map(std::string port)
 // test isFresh
   std::cout << "The request is fresh or not? " << cache.isFresh(*request, 0, request_t) << std::endl;
 // test validation
+  
   cache.revalidation(0,  *response, *request);
+  
   delete request;
   delete response;
   close(s_fd);
