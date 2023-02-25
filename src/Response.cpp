@@ -117,3 +117,7 @@ size_t Response::getContentLen() { return body.length(); }
 void Response::setStatus(std::string status) { this->status_code = status; }
 
 void Response::setReason(std::string reason) { this->reason = reason; }
+
+std::string Response::getStatus() { return this->status_code; }
+
+std::string Response::getReason() { return this->reason; }

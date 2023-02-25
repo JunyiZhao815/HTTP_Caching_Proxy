@@ -54,5 +54,9 @@ public:
   void setStatus(std::string status);
 
   void setReason(std::string reason);
+
+  std::string getStatus();
+
+  std::string getReason();
 };
 #endif
