@@ -11,6 +11,7 @@ Node* Cache::getResponse(Request request) {
   return map[URI];
 }
 
+
 void Cache::putResponse(Request request, Response response) {
   m.lock();
   Node *pointer = head;
@@ -81,6 +82,8 @@ time_t get_current_age(time_t request_time, Response response) {
   return current_age;
 }
 
+
+
 time_t get_freshness_lifetime(std::string max_age, std::string expires,
                            std::string last_modified, time_t request_time,
                            Response response) {
@@ -130,16 +133,18 @@ bool Cache::isFresh(Request request, int user_id, time_t request_time) {
 
     if (freshness_lifetime > current_age) {
       std::cout << "it is fresh" << std::endl;
+      print_expire(user_id, response_old, ": in cache, but expired at ");
       return true;
     } else {
       std::cout << "it is not fresh" << std::endl;
+      print_expire(user_id, response_old, ": in cache, requires validation");
       return false;
     }
   }
 }
 
 
-void print_expire(int user_id, Response response){
+void print_expire(int user_id, Response response, std::string words){
     std::string max_age = response.getMaxAge();
     std::string expires = response.getExpires();
     std::string last_modified = response.getLastModified();
@@ -150,26 +155,25 @@ void print_expire(int user_id, Response response){
         time_t expire_age = date_age + max_age_int;
         struct tm *exp = gmtime(&expire_age);
         const char *expire_time_act = asctime(exp);
-        std::cout <<""<<std::endl;
-        Logger::getLogger().proxyLog(user_id, ": cached, expires at " + std::string(expire_time_act));
+        Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
     } else if (expires != "") {
         time_t expire_time = convert_string2timet(expires);
         struct tm *exp = gmtime(&expire_time);
         const char*expire_time_act = asctime(exp);
-        Logger::getLogger().proxyLog(user_id, ": cached, expires at " + std::string(expire_time_act));
+        Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
     } else if (last_modified != "") {
         time_t date_age = convert_string2timet(date);
         time_t last_modified_age = convert_string2timet(last_modified);
         time_t exp_age = time(NULL) + difftime(date_age, last_modified_age) / 10;
         struct tm *exp = gmtime(&exp_age);
         const char *expire_time_act = asctime(exp);
-        Logger::getLogger().proxyLog(user_id, ": cached, expires at " + std::string(expire_time_act));
+        Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
     }
 }
 
 
 
-void Cache::revalidation(int user_id, Response response, Request request) {
+void Cache::revalidation(int user_id, Request request, Response response) {
   std::string etag = response.getEtag();
   std::string lastModified = response.getLastModified();
   // 1. Sending a Validation Request
@@ -177,10 +181,10 @@ void Cache::revalidation(int user_id, Response response, Request request) {
     std::cout << "etag" << std::endl;
     check_validation(request, response, user_id, "If-None-Match", etag);
   } else if (lastModified != "") {
-        std::cout << "last modified" << std::endl;
+    std::cout << "last modified" << std::endl;
     check_validation(request, response, user_id, "If-Modified-Since", lastModified);
   } else {
-      std::cout << " else, resend" << std::endl;
+    std::cout << " else, resend" << std::endl;
     check_validation(request, response, user_id, "", "");
   }
 }
@@ -189,9 +193,9 @@ void Cache::check_validation(Request request, Response response, int user_id, st
   if(tag == "If-None-Match"){
     Logger::getLogger().proxyLog(user_id, ": NOTE ETag: " + value);
   }else if(tag == "If-Modified-Since"){
-    Logger::getLogger().proxyLog(user_id, ": NOTE Last-Modified: " + value);
+    Logger::getLogger().proxyLog(user_id, ":E Last-Modified: " + value);
   }else{
-    Logger::getLogger().log("send again");
+    Logger::getLogger().proxyLog(user_id, "send again");
   }
 
 
@@ -201,12 +205,15 @@ void Cache::check_validation(Request request, Response response, int user_id, st
   }
   std::cout << newRequest << std::endl;
 
-  httpConnector.sendMessage(newRequest, false); // send the request to the server
+   // send the request to the server
+  httpConnector.sendRequest(&newRequest);
+
   Response* newResponse = httpConnector.receiveResponse(); // receive the new response from the server, and check
   std::cout << newResponse->getStatusCode() << std::endl;
   if (newResponse->getStatusCode() == "304") {
     // respond from cache
     std::cout << "code = 304" << std::endl;
+    Logger::getLogger().proxyLog(user_id, ": NOTE the status code is 304");
     respond_to_client(response, user_id);
   } else if (newResponse->getStatusCode() == "200") {
     std::cout << "cod = 200" << std::endl;
@@ -218,13 +225,12 @@ void Cache::check_validation(Request request, Response response, int user_id, st
         if (newResponse->getCacheControl().find("must-revalidate")!= (long)(unsigned)-1){
             Logger::getLogger().proxyLog(user_id, ": cached, but requires re-validation" + value);
         }else{
-            print_expire(user_id, response);
+            print_expire(user_id, response, ": cached, expires at ");
         }
       }
     }else{
-      std::cout << "code is neither 200 nor 304" << std::endl;
         if (newResponse->getCacheable()==""){
-          Logger::getLogger().proxyLog(user_id, ": not cacheable because cache control not specified");
+          Logger::getLogger().proxyLog(user_id, ": not cacheable because cache-control tag is empty");
         }else{
           Logger::getLogger().proxyLog(user_id, ": not cacheable because "+ newResponse->getCacheable());
         }
