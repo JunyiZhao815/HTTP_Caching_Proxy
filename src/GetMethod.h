@@ -1,6 +1,7 @@
 #ifndef __GET_METHOD_H__
 #define __GET_METHOD_H__
 #include "HttpMethod.h"
+#include "Cache.hpp"
 
 class GetMethod : public HttpMethod {
 public:

@@ -3,6 +3,7 @@
 void GetMethod::takeAction(HttpConnector &httpConnector, Request &request) {
   // filter invalid field in get method
   filter(request);
+
   // send request to server
   httpConnector.sendRequest(&request);
   // receive response from server
