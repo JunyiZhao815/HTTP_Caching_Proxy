@@ -27,12 +27,16 @@ Request *HttpParser::parseRequest(const char *msg, const size_t len) {
   addToRemainParsed(msg, len);
   boost::system::error_code ec;
   size_t consumed = 1;
-  while(consumed != 0 && !remainParsed.empty()){
+  while(consumed != 0 && !requestParser.is_done() && !remainParsed.empty()){
     consumed = requestParser.put(boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
     remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
   }
   
   if (requestParser.is_done()) {
+    if(!remainParsed.empty()){
+      // content-length is wrong
+      throw std::invalid_argument("400|ERROR Content-Length is not match with the body size");
+    }
     return createRequest(requestParser.release());
   }
   if (ec == http::error::need_more || ec.value() == 0) {
@@ -82,12 +86,15 @@ Response *HttpParser::parseResponse(const char *msg, const size_t len) {
   addToRemainParsed(msg, len);
   boost::system::error_code ec;
   size_t consumed = 1;
-  while (consumed != 0 && !remainParsed.empty()) {
+  while (consumed != 0 && !responseParser.is_done() && !remainParsed.empty()) {
     consumed = responseParser.put(
         boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
     remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
   }
   if (responseParser.is_done()) {
+    if(!remainParsed.empty()){
+      throw std::invalid_argument("500|ERROR The Content-Length of response from origin server is not match with body size");
+    }
     return createResponse(responseParser.release());
   }
   if (ec == http::error::need_more || ec.value() == 0) {
