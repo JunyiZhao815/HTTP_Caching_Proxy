@@ -14,8 +14,8 @@ class Node {
 public:
   std::string URI;
   Response response;
-  Node *prev;
-  Node *next;
+  Node *prev = NULL;
+  Node *next = NULL;
   Node(std::string URI, Response response) : URI(URI), response(response) {}
 };
 

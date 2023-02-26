@@ -19,8 +19,10 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
   // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2");
 
   while (pointer != NULL) {
+      std::cout << "a" << std:: endl;
       // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2.5");
     if (pointer->URI == URI) {
+      std::cout << "b" << std:: endl;
 
       //  if(size - (pointer->response).getMessageLen() +
       //  response.getMessageLen() > capacity){
@@ -28,6 +30,8 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
       //   exactly the node we need to update?
       // }
       pointer->response = response;
+            std::cout << "c" << std:: endl;
+
       return;
     }
     pointer = pointer->next;
@@ -35,21 +39,31 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
   // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 3");
 
   // Add Node to the end of linkedlist
+        std::cout << "d" << std:: endl;
+
   Node *temp = new Node(URI, response);
   if (size == 0) {
     head = temp;
     tail = temp;
   } else {
+          std::cout << "e" << std:: endl;
+
     tail->next = temp;
     tail->next->prev = tail;
     tail = tail->next;
+          std::cout << "f" << std:: endl;
+
   }
   map[URI] = temp;
   ++size;
+      std::cout << "size!!!!!: " << size << std::endl;
+      std::cout << "capacity!!!!!: " << capacity << std::endl;
+
     // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 4");
 
   // Delete the first Node if the size excceed the capacity
   if (this->size > capacity) {
+    std::cout << "REMOVE !!!!!" << std::endl;
     Logger::getLogger().proxyLog(user_id, "NOTE Delete the first node because the current cache size is out of capacity");
 
     Node *first = head;
@@ -167,7 +181,7 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
     time_t date_age = convert_string2timet(date);
     time_t expire_age = date_age + max_age_int + 3600;
     struct tm *exp = gmtime(&expire_age);
-    const char *expire_time_act = asctime(exp);    Logger::getLogger().proxyLog(user_id, "last max_age");
+    const char *expire_time_act = asctime(exp);    Logger::getLogger().proxyLog(user_id, "max_age");
     Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
   } else if (expires != "") {
     time_t expire_time = convert_string2timet(expires);
