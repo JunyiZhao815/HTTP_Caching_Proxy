@@ -59,7 +59,7 @@ public:
   If the response is fresh, we directly use it, otherwise, we go to revalidation
   part.
   */
-  bool isFresh(Request request, int user_id, time_t request_time);
+  bool isFresh(Request request, int user_id);
 
   /*
   This function revalidation the request and response.

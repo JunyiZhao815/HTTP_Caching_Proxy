@@ -6,7 +6,7 @@ class Response : public HttpMessage {
 private:
   std::string status_code;
   std::string reason;
-
+  time_t first_request_time = 1;
 private:
   std::string getStartLine() const;
 
@@ -58,5 +58,9 @@ public:
   std::string getStatus();
 
   std::string getReason();
+
+  void setFirstRequestTime(time_t time);
+  time_t getFirstRequestTime();
+
 };
 #endif

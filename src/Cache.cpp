@@ -16,9 +16,10 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
   Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache");
   Node *pointer = head;
   std::string URI = request.getURI();
-  Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2");
+  // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2");
 
   while (pointer != NULL) {
+      // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2.5");
     if (pointer->URI == URI) {
 
       //  if(size - (pointer->response).getMessageLen() +
@@ -31,7 +32,7 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
     }
     pointer = pointer->next;
   }
-  Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 3");
+  // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 3");
 
   // Add Node to the end of linkedlist
   Node *temp = new Node(URI, response);
@@ -45,10 +46,12 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
   }
   map[URI] = temp;
   ++size;
-    Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 4");
+    // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 4");
 
   // Delete the first Node if the size excceed the capacity
   if (this->size > capacity) {
+    Logger::getLogger().proxyLog(user_id, "NOTE Delete the first node because the current cache size is out of capacity");
+
     Node *first = head;
     map[first->URI] = NULL;
     head = head->next;
@@ -59,7 +62,7 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
     }
     --size;
   }
-    Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 5");
+    // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 5");
 
   m.unlock();
 }
@@ -71,27 +74,32 @@ time_t convert_string2timet(std::string time) {
   }
   struct tm tm;
   strptime(time.c_str(), "%a, %d %b %Y %H:%M:%S", &tm);
-  return mktime(&tm) - 18000;
+  time_t t = mktime(&tm);
+  // std::cout << "The maketime is: " << t << std::endl;
+  return t - 18000;
 }
 
-time_t get_current_age(time_t request_time, Response response) {
+time_t get_current_age(Response response) {
   time_t age_value = stoi(response.getAge());
   time_t date_value = convert_string2timet(response.getDate());
-  time_t now = time(NULL);
-  time_t response_time = convert_string2timet(response.getDate());
+  time_t response_time = date_value;
   time_t apparent_age =
       response_time - date_value < 0 ? 0 : response_time - date_value;
-  time_t response_delay = response_time - request_time;
+  time_t response_delay = response_time - response.getFirstRequestTime();
+  std::cout << "response_time is: " <<response_time << std::endl;
+  std::cout << "response.getFirstRequestTime() is: " <<response.getFirstRequestTime() << std::endl;
+
   time_t corrected_age_value = age_value + response_delay;
   time_t corrected_initial_age =
       apparent_age > corrected_age_value ? apparent_age : corrected_age_value;
+  time_t now = time(0); // correct
   time_t resident_time = now - response_time;
   time_t current_age = corrected_initial_age + resident_time;
-  return current_age;
+  return current_age - 3600;
 }
 
 time_t get_freshness_lifetime(std::string max_age, std::string expires,
-                              std::string last_modified, time_t request_time,
+                              std::string last_modified,
                               Response response) {
   if (max_age != "") {
     time_t a = stoi(max_age);
@@ -104,7 +112,7 @@ time_t get_freshness_lifetime(std::string max_age, std::string expires,
     time_t last_modified_time = convert_string2timet(last_modified);
     time_t date = convert_string2timet(response.getDate());
     time_t heuristic_lifetime = difftime(date, last_modified_time) / 10;
-    time_t current_age = get_current_age(request_time, response);
+    time_t current_age = get_current_age(response);
     if (current_age > 24 * 60 * 60 && response.getWarning() == "") {
       response.addHeaderField("warn-code", "133");
     }
@@ -114,7 +122,7 @@ time_t get_freshness_lifetime(std::string max_age, std::string expires,
 }
 
 // finish testing
-bool Cache::isFresh(Request request, int user_id, time_t request_time) {
+bool Cache::isFresh(Request request, int user_id) {
   Node *response_node = this->getResponse(request, user_id);
   if (response_node == NULL) {
     std::cerr
@@ -131,8 +139,8 @@ bool Cache::isFresh(Request request, int user_id, time_t request_time) {
     std::string expires = response_old.getExpires();
     std::string last_modified = response_old.getLastModified();
     int freshness_lifetime = get_freshness_lifetime(
-        max_age, expires, last_modified, request_time, response_old);
-    int current_age = get_current_age(request_time, response_old);
+        max_age, expires, last_modified, response_old);
+    int current_age = get_current_age(response_old);
 
     std::cout << "freshness_lifetime is:" << freshness_lifetime << std::endl;
     std::cout << "current_age is:" << current_age << std::endl;
@@ -157,21 +165,22 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
   if (max_age != "") {
     time_t max_age_int = stoi(max_age);
     time_t date_age = convert_string2timet(date);
-    time_t expire_age = date_age + max_age_int;
+    time_t expire_age = date_age + max_age_int + 3600;
     struct tm *exp = gmtime(&expire_age);
-    const char *expire_time_act = asctime(exp);
+    const char *expire_time_act = asctime(exp);    Logger::getLogger().proxyLog(user_id, "last max_age");
     Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
   } else if (expires != "") {
     time_t expire_time = convert_string2timet(expires);
     struct tm *exp = gmtime(&expire_time);
-    const char *expire_time_act = asctime(exp);
+    const char *expire_time_act = asctime(exp);    Logger::getLogger().proxyLog(user_id, "expire");
     Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
   } else if (last_modified != "") {
-    time_t date_age = convert_string2timet(date);
+    time_t date_age = convert_string2timet(date) + 3600;
     time_t last_modified_age = convert_string2timet(last_modified);
     time_t exp_age = time(NULL) + difftime(date_age, last_modified_age) / 10;
     struct tm *exp = gmtime(&exp_age);
     const char *expire_time_act = asctime(exp);
+    Logger::getLogger().proxyLog(user_id, "last modified");
     Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
   }
 }

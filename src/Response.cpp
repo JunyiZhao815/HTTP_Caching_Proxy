@@ -121,3 +121,13 @@ void Response::setReason(std::string reason) { this->reason = reason; }
 std::string Response::getStatus() { return this->status_code; }
 
 std::string Response::getReason() { return this->reason; }
+
+void Response::setFirstRequestTime(time_t time){
+  if(this->first_request_time == 1){
+    this->first_request_time = time;
+  }
+}
+
+time_t Response::getFirstRequestTime(){
+  return this->first_request_time;
+}
