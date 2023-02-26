@@ -12,7 +12,9 @@ Node *Cache::getResponse(Request request, size_t user_id) {
 }
 
 void Cache::putResponse(Request request, Response response, size_t user_id) {
+  std::cout << "aaaaaaa" << std::endl;
   m.lock();
+   std::cout << "bbbbbbbb" << std::endl;
   Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache");
   Node *pointer = head;
   std::string URI = request.getURI();
@@ -31,6 +33,7 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
       // }
       pointer->response = response;
             std::cout << "c" << std:: endl;
+     m.unlock();
 
       return;
     }
@@ -225,7 +228,7 @@ void Cache::check_validation(Request request, Response response, int user_id,
   } else if (tag == "If-Modified-Since") {
     Logger::getLogger().proxyLog(user_id, "NOTE Last-Modified: " + value);
   } else {
-    Logger::getLogger().proxyLog(user_id, "send again");
+    Logger::getLogger().proxyLog(user_id, "WARNING send again");
   }
 
   Request newRequest = request;
@@ -240,7 +243,7 @@ void Cache::check_validation(Request request, Response response, int user_id,
   Response *newResponse =
       httpConnector.receiveResponse(); // receive the new response from the
                                        // server, and check
-  std::cout << newResponse->getStatusCode() << std::endl;
+  std::cout <<"code is: "<< newResponse->getStatusCode() << std::endl;
   if (newResponse->getStatusCode() == "304") {
     // respond from cache
     std::cout << "code = 304" << std::endl;
@@ -250,18 +253,25 @@ void Cache::check_validation(Request request, Response response, int user_id,
     response_to_send.setStatus(newResponse->getStatus());
     respond_to_client(response_to_send, user_id, httpConnector);
   } else if (newResponse->getStatusCode() == "200") {
-    std::cout << "cod = 200" << std::endl;
+    std::cout << "code = 200" << std::endl;
     // If the new response is cacheable
     if (newResponse->getCacheable() == "yes") {
       // Update response
+      std::cout << "is cacheable 1" << std::endl;
       putResponse(request, *newResponse, user_id);
+        std::cout << "is cacheable 2" << std::endl;
+
       if (newResponse->getCacheControl() != "") {
         if (newResponse->getCacheControl().find("must-revalidate") !=
             (long)(unsigned)-1) {
           Logger::getLogger().proxyLog(
-              user_id, ": cached, but requires re-validation" + value);
+              user_id, "cached, but requires re-validation" + value);
         } else {
-          print_expire(user_id, response, ": cached, expires at ");
+                std::cout << "is cacheable 3" << std::endl;
+
+          print_expire(user_id, response, "cached, expires at ");
+                std::cout << "is cacheable 4" << std::endl;
+
         }
       }
     } else {
