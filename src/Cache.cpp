@@ -14,19 +14,15 @@ Node *Cache::getResponse(Request request, size_t user_id) {
 }
 
 void Cache::putResponse(Request request, Response response, size_t user_id) {
-  std::cout << "aaaaaaa" << std::endl;
   m.lock();
-   std::cout << "bbbbbbbb" << std::endl;
   Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache");
   Node *pointer = head;
   std::string URI = request.getURI();
   // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2");
 
   while (pointer != NULL) {
-      std::cout << "a" << std:: endl;
       // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 2.5");
     if (pointer->URI == URI) {
-      std::cout << "b" << std:: endl;
 
       //  if(size - (pointer->response).getMessageLen() +
       //  response.getMessageLen() > capacity){
@@ -34,7 +30,6 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
       //   exactly the node we need to update?
       // }
       pointer->response = response;
-            std::cout << "c" << std:: endl;
      m.unlock();
 
       return;
@@ -44,31 +39,23 @@ void Cache::putResponse(Request request, Response response, size_t user_id) {
   // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 3");
 
   // Add Node to the end of linkedlist
-        std::cout << "d" << std:: endl;
 
   Node *temp = new Node(URI, response);
   if (size == 0) {
     head = temp;
     tail = temp;
   } else {
-          std::cout << "e" << std:: endl;
-
     tail->next = temp;
     tail->next->prev = tail;
     tail = tail->next;
-          std::cout << "f" << std:: endl;
-
   }
   map[URI] = temp;
   ++size;
-      std::cout << "size!!!!!: " << size << std::endl;
-      std::cout << "capacity!!!!!: " << capacity << std::endl;
 
     // Logger::getLogger().proxyLog(user_id, "NOTE trying put response into cache 4");
 
   // Delete the first Node if the size excceed the capacity
   if (this->size > capacity) {
-    std::cout << "REMOVE !!!!!" << std::endl;
     Logger::getLogger().proxyLog(user_id, "NOTE Delete the first node because the current cache size is out of capacity");
 
     Node *first = head;
@@ -105,8 +92,8 @@ time_t get_current_age(Response response) {
   time_t apparent_age =
       response_time - date_value < 0 ? 0 : response_time - date_value;
   time_t response_delay = response_time - response.getFirstRequestTime();
-  std::cout << "response_time is: " <<response_time << std::endl;
-  std::cout << "response.getFirstRequestTime() is: " <<response.getFirstRequestTime() << std::endl;
+  // std::cout << "response_time is: " <<response_time << std::endl;
+  // std::cout << "response.getFirstRequestTime() is: " <<response.getFirstRequestTime() << std::endl;
 
   time_t corrected_age_value = age_value + response_delay;
   time_t corrected_initial_age =
@@ -121,18 +108,13 @@ time_t get_freshness_lifetime(std::string max_age, std::string expires,
                               std::string last_modified,
                               Response response) {
   if (max_age != "") {
-    std::cout << "maxage 1 is " << max_age  << std::endl;
     time_t a = stoi(max_age);
     return a;
   } else if (expires != "") {
-        std::cout << "maxage 2 is: " << expires << std::endl;
-
     time_t expire_time = convert_string2timet(expires);
     time_t response_time = convert_string2timet(response.getDate());
     return expire_time - response_time;
   } else if (last_modified != "") {
-        std::cout << "maxage 3 is: " << last_modified << std::endl;
-
     time_t last_modified_time = convert_string2timet(last_modified);
     time_t date = convert_string2timet(response.getDate());
     time_t heuristic_lifetime = difftime(date, last_modified_time) / 10;
@@ -167,8 +149,8 @@ bool Cache::isFresh(Request request, int user_id) {
         max_age, expires, last_modified, response_old);
     int current_age = get_current_age(response_old);
 
-    std::cout << "freshness_lifetime is:" << freshness_lifetime << std::endl;
-    std::cout << "current_age is:" << current_age << std::endl;
+    // std::cout << "freshness_lifetime is:" << freshness_lifetime << std::endl;
+    // std::cout << "current_age is:" << current_age << std::endl;
 
     if (freshness_lifetime > current_age) {
       std::cout << "it is fresh" << std::endl;
@@ -270,20 +252,14 @@ void Cache::check_validation(Request request, Response response, int user_id,
     // If the new response is cacheable
     if (newResponse->getCacheable() == "yes") {
       // Update response
-      std::cout << "is cacheable 1" << std::endl;
       putResponse(request, *newResponse, user_id);
-        std::cout << "is cacheable 2" << std::endl;
-
       if (newResponse->getCacheControl() != "") {
         if (newResponse->getCacheControl().find("must-revalidate") !=
             (long)(unsigned)-1) {
           Logger::getLogger().proxyLog(
               user_id, "cached, but requires re-validation" + value);
         } else {
-                std::cout << "is cacheable 3" << std::endl;
-
           print_expire(user_id, response, "cached, expires at ");
-                std::cout << "is cacheable 4" << std::endl;
 
         }
       }
