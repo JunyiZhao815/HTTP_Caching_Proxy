@@ -91,6 +91,10 @@ public:
   check if the current response is cacheable
   */
   bool isCacheable(Response response);
+
+
+  std::string getCurrUTCtime();
+
 };
 
 #endif

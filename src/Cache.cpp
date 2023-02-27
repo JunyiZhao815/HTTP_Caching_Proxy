@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <ctime>
+#include <iomanip>
 
 Node *Cache::getResponse(Request request, size_t user_id) {
   Logger::getLogger().proxyLog(user_id, "NOTE trying to get response from cache");
@@ -98,7 +100,7 @@ time_t convert_string2timet(std::string time) {
 
 time_t get_current_age(Response response) {
   time_t age_value = stoi(response.getAge());
-  time_t date_value = convert_string2timet(response.getDate());
+  time_t date_value = convert_string2timet(response.getDate()) + 3600;
   time_t response_time = date_value;
   time_t apparent_age =
       response_time - date_value < 0 ? 0 : response_time - date_value;
@@ -109,23 +111,28 @@ time_t get_current_age(Response response) {
   time_t corrected_age_value = age_value + response_delay;
   time_t corrected_initial_age =
       apparent_age > corrected_age_value ? apparent_age : corrected_age_value;
-  time_t now = time(0); // correct
+  time_t now = time(NULL); // correct
   time_t resident_time = now - response_time;
   time_t current_age = corrected_initial_age + resident_time;
-  return current_age - 3600;
+  return current_age;
 }
 
 time_t get_freshness_lifetime(std::string max_age, std::string expires,
                               std::string last_modified,
                               Response response) {
   if (max_age != "") {
+    std::cout << "maxage 1 is " << max_age  << std::endl;
     time_t a = stoi(max_age);
     return a;
   } else if (expires != "") {
+        std::cout << "maxage 2 is: " << expires << std::endl;
+
     time_t expire_time = convert_string2timet(expires);
     time_t response_time = convert_string2timet(response.getDate());
     return expire_time - response_time;
   } else if (last_modified != "") {
+        std::cout << "maxage 3 is: " << last_modified << std::endl;
+
     time_t last_modified_time = convert_string2timet(last_modified);
     time_t date = convert_string2timet(response.getDate());
     time_t heuristic_lifetime = difftime(date, last_modified_time) / 10;
@@ -164,6 +171,7 @@ bool Cache::isFresh(Request request, int user_id) {
 
     if (freshness_lifetime > current_age) {
       std::cout << "it is fresh" << std::endl;
+      Logger::getLogger().proxyLog(user_id, "in cache, valid");
       print_expire(user_id, response_old, "in cache, but expired at ");
       return true;
     } else {
@@ -184,12 +192,12 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
     time_t date_age = convert_string2timet(date);
     time_t expire_age = date_age + max_age_int + 3600;
     struct tm *exp = gmtime(&expire_age);
-    const char *expire_time_act = asctime(exp);    Logger::getLogger().proxyLog(user_id, "max_age");
+    const char *expire_time_act = asctime(exp);    
     Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
   } else if (expires != "") {
     time_t expire_time = convert_string2timet(expires);
     struct tm *exp = gmtime(&expire_time);
-    const char *expire_time_act = asctime(exp);    Logger::getLogger().proxyLog(user_id, "expire");
+    const char *expire_time_act = asctime(exp);    
     Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
   } else if (last_modified != "") {
     time_t date_age = convert_string2timet(date) + 3600;
@@ -197,7 +205,6 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
     time_t exp_age = time(NULL) + difftime(date_age, last_modified_age) / 10;
     struct tm *exp = gmtime(&exp_age);
     const char *expire_time_act = asctime(exp);
-    Logger::getLogger().proxyLog(user_id, "last modified");
     Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
   }
 }
@@ -249,9 +256,11 @@ void Cache::check_validation(Request request, Response response, int user_id,
     std::cout << "code = 304" << std::endl;
     Logger::getLogger().proxyLog(user_id, "NOTE the status code is 304");
     Response response_to_send = response;
-    response_to_send.setReason(newResponse->getReason());
-    response_to_send.setStatus(newResponse->getStatus());
+    // response_to_send.setReason(newResponse->getReason());
+    // response_to_send.setStatus(newResponse->getStatus());
+    // respond_to_client(response_to_send, user_id, httpConnector);
     respond_to_client(response_to_send, user_id, httpConnector);
+
   } else if (newResponse->getStatusCode() == "200") {
     std::cout << "code = 200" << std::endl;
     // If the new response is cacheable
@@ -277,9 +286,9 @@ void Cache::check_validation(Request request, Response response, int user_id,
     } else {
       if (newResponse->getCacheable() == "") {
         Logger::getLogger().proxyLog(
-            user_id, ": not cacheable because cache-control tag is empty");
+            user_id, "not cacheable because cache-control tag is empty");
       } else {
-        Logger::getLogger().proxyLog(user_id, ": not cacheable because " +
+        Logger::getLogger().proxyLog(user_id, "not cacheable because " +
                                                   newResponse->getCacheable());
       }
     }
@@ -299,4 +308,12 @@ bool Cache::isCacheable(Response response) {
   } else {
     return false;
   }
+}
+std::string Cache::getCurrUTCtime() {
+  std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+  std::time_t utc_time = std::chrono::system_clock::to_time_t(now);
+  std::tm utc_tm = *std::gmtime(&utc_time);
+  std::stringstream ss;
+  ss << std::put_time(&utc_tm, "%a %b %d %T %Y");
+  return ss.str();
 }

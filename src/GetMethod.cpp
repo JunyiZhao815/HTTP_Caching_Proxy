@@ -40,7 +40,13 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
 
   Node *node = cache.getResponse(request, httpConnector.getClientId());
   if (node != NULL) {
-    node->response.setFirstRequestTime(time(0));
+    std::string curTime = cache.getCurrUTCtime();
+
+    struct tm tm;
+    strptime(curTime.c_str(), "%a %b %d %T %Y", &tm);
+    time_t t = mktime(&tm);
+    node->response.setFirstRequestTime(t - 14400);
+    std::cout << "curr time is : " << t - 14400<< std::endl;
     if (cache.isFresh(request, httpConnector.getClientId())) {
       std::cout << "1" << std:: endl;
       response = &(node->response);
