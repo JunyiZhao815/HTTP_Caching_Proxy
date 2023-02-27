@@ -55,10 +55,10 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
     // receive response from server
     response = httpConnector.receiveResponse();
     Logger::getLogger().proxyLog(httpConnector.getClientId(), "Received \"" + response->getFirstLine() + "\" from " + request.getHost().first);
-    cache.log_cacheable(*response, httpConnector.getClientId());
     if (cache.isCacheable(*response)) {
       cache.putResponse(request, *response, httpConnector.getClientId());
     }
+    cache.log_cacheable(*response, httpConnector.getClientId());
   }
 
   // send response to client

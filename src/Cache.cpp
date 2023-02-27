@@ -257,7 +257,7 @@ void Cache::check_validation(Request request, Response response, int user_id,
       putResponse(request, *newResponse, user_id);
       if (newResponse->getCacheControl() != "") {
         if (newResponse->getCacheControl().find("must-revalidate") !=
-            (long)(unsigned)-1) {
+            std::string::npos) {
           Logger::getLogger().proxyLog(
               user_id, "cached, but requires re-validation" + value);
         } else {
@@ -303,7 +303,8 @@ std::string Cache::getCurrUTCtime() {
 void Cache::log_cacheable(Response& response, int user_id){
   if (response.getCacheable() == "yes") {
       if (response.getCacheControl() != "") {
-        if (response.getCacheControl().find("must-revalidate") != (long)(unsigned)-1) {
+        if (response.getCacheControl().find("must-revalidate") != std::string::npos) {
+          std:: cout << "it is: "<<response.getCacheControl().find("must-revalidate") << std::endl;
           Logger::getLogger().proxyLog(user_id, "cached, but requires re-validation");
         } else {
           print_expire(user_id, response, "cached, expires at ");
