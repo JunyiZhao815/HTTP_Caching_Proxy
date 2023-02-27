@@ -1,0 +1,63 @@
+Danger log
+
+-------------------------------------------------------------------
+02/10/2023
+-------------------------------------------------------------------
+We checked the requirement of the project, and assign the work for us, one for the whole framework part, and one for the cache part. But we still did not know exactly how the proxy works.
+
+-------------------------------------------------------------------
+02/14/2023
+-------------------------------------------------------------------
+After designing our HTTP proxy demo, we noticed that it was important to keep the integrity of messages during receiving, we solved that problem by using the put and is_done functions of the boost library, we keep receiving until an exception occurs or is_done returns true.
+
+-------------------------------------------------------------------
+02/15/2023
+-------------------------------------------------------------------
+At first, when designing the cache, it is easy to use a map to store the request and its corresponding response, but in the book, we can use URI as the key instead of the whole request. The trouble was which replacement policy to use, we choose to use FIFO because it is way simpler, one doubly LinkedList is a good data structure to implement it. 
+
+-------------------------------------------------------------------
+02/16/2023
+-------------------------------------------------------------------
+We designed our exception strategy as a two-layer exception structure. For the first layer, we would catch the exception, log the error information and send the error message to the client, for the second layer, it would only log the error information without sending it to the client. In this way, even if the program throws an exception in the progress of sending an error message to the client, that exception could still be caught without affecting the running of the program. By this way, we made our program no throw exception guarantee.
+
+-------------------------------------------------------------------
+02/18/2023
+-------------------------------------------------------------------
+When writing code to check the freshness of the response, one trouble is the UTC and GMT time. At first, I thought UTC time is the time zone that we are in now. So the output is always 5 hours behind the correct time. It was until 26th Feb that I realize that there is no difference between UTC and GMT time. And the calculation of freshness was not easy, because we needed many values, like the stored response’s date, create time, and its request’s time. So I need to record them.
+
+-------------------------------------------------------------------
+02/19/2023
+-------------------------------------------------------------------
+We noticed that there were some connections that sent messages with length 0 when they connected to our HTTP proxy immediately, to filter that kind of connection, we made our proxy throw an exception when the length of the message was 0 but the request message was not complete.
+
+-------------------------------------------------------------------
+02/20/2023
+-------------------------------------------------------------------
+Proxy will send the stored response back to the client when the new response that comes from the server has status code 304, and respond that to the client as well. When I wrote it, I thought I need to merge the 304 status code into the stored response, and then sent it to the client, but I was wrong until I saw the post from ed. 
+
+-------------------------------------------------------------------
+02/21/2023
+-------------------------------------------------------------------
+During the testing process, we found that some threads never stop, then we changed our program to a single thread and debugged by GDB, we found that the origin server did not send a message but our program waited for the response, then we set the timeout to 10s, when the waiting time exceeds 10s, we throw an exception and send the error message to the client.
+
+-------------------------------------------------------------------
+02/22/2023
+-------------------------------------------------------------------
+When testing our proxy, we found our program still exit by accident even if we used the two-layer exception structure, then we found the exception was thrown by the main thread with accept function, then we take the main thread into account and solved that problem.
+
+-------------------------------------------------------------------
+02/24/2023
+-------------------------------------------------------------------
+When I clicked the same page three times, the third time, the page kept running and never ended. So I std::cout each line that could possibly be the reason why such bug occurred. And I found out that when I stored the response in the cache, the lock is locked, but not unlocked after. So I added m.unlock() before the return statement in one block.
+
+
+-------------------------------------------------------------------
+02/25/2023
+-------------------------------------------------------------------
+There was a problem each time logging the expiration information, there was always a new line generated automatically. And I could not find out why it occurred. So I also std::cout each line that could possibly be the reason why such bug occurred. And I found out that the function asctime() will always return a string that has a new line sign at the end, so I used pop_back() to remove it.
+
+
+-------------------------------------------------------------------
+02/26/2023
+-------------------------------------------------------------------
+Solving the bug on cache operation and logging. One problem was that logging occurred twice at the same time when trying to check the cache if there is a corresponding response. The reason such bugs occurred was that we checked the request twice, once in the takeAction(), and once in the isFresh(). I think this kind of bug occurs because at the beginning, we did not plan well for each function(the takeAction() and isFresh() are done by different people).
