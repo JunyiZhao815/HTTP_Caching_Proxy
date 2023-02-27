@@ -83,3 +83,35 @@ Method: GET
 3: NOTE trying to get response from cache
 3: not in cache
 ----------------------------------------------------------------------------------------------------
+
+
+
+5. replacement policy:
+   setting the capacity to 3, which means most three response can be cached, 
+   if there is a fourth response that wants to be caches, the first stored cache is removed.
+----------------------------------------------------------------------------------------------------
+2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:51 2023
+1: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 212.213.214.215 @ Mon Feb 27 02:46:51 2023
+2: NOTE trying to get response from cache
+2: not in cache
+2: NOTE trying put response into cache
+3: "GET http://njrusmc.net/cache/zero128k_public3600.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:52 2023
+3: NOTE trying to get response from cache
+3: not in cache
+3: NOTE trying put response into cache
+4: "GET http://njrusmc.net/cache/rand128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:53 2023
+4: NOTE trying to get response from cache
+4: not in cache
+4: NOTE trying put response into cache
+5: "GET http://njrusmc.net/cache/rand128k_public3600.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:54 2023
+5: NOTE trying to get response from cache
+5: not in cache
+5: NOTE trying put response into cache
+5: NOTE Delete the first node because the current cache size is out of capacity
+6: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:56 2023
+6: NOTE trying to get response from cache
+6: not in cache
+6: NOTE trying put response into cache
+6: NOTE Delete the first node because the current cache size is out of capacity
+----------------------------------------------------------------------------------------------------
+
