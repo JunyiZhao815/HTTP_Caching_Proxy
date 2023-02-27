@@ -27,15 +27,17 @@ Request *HttpParser::parseRequest(const char *msg, const size_t len) {
   addToRemainParsed(msg, len);
   boost::system::error_code ec;
   size_t consumed = 1;
-  while(consumed != 0 && !requestParser.is_done() && !remainParsed.empty()){
-    consumed = requestParser.put(boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
+  while (consumed != 0 && !requestParser.is_done() && !remainParsed.empty()) {
+    consumed = requestParser.put(
+        boost::asio::buffer(remainParsed.data(), remainParsed.size()), ec);
     remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
   }
-  
+
   if (requestParser.is_done()) {
-    if(!remainParsed.empty()){
+    if (!remainParsed.empty()) {
       // content-length is wrong
-      throw std::invalid_argument("400|ERROR Content-Length is not match with the body size");
+      throw std::invalid_argument(
+          "400|ERROR Content-Length is not match with the body size");
     }
     return createRequest(requestParser.release());
   }
@@ -48,12 +50,12 @@ Request *HttpParser::parseRequest(const char *msg, const size_t len) {
   return NULL;
 }
 
-void HttpParser::handleChunked(Response* response){
+void HttpParser::handleChunked(Response *response) {
   // delete chunked from Transfer-Encoding
   std::string transferEncoding = response->getTransferEncoding();
-  if(transferEncoding == "chunked"){
+  if (transferEncoding == "chunked") {
     response->removeHeaderField("transfer-encoding");
-  }else{
+  } else {
     size_t index = transferEncoding.find(", chunked");
     transferEncoding = transferEncoding.substr(0, index);
     response->addHeaderField("transfer-encoding", transferEncoding);
@@ -76,7 +78,7 @@ HttpParser::createResponse(http::response<http::string_body> message) {
 
   Response *response = new Response(version, status_code, reason,
                                     responseHeader, message.body());
-  if(message.chunked()){
+  if (message.chunked()) {
     handleChunked(response);
   }
   return response;
@@ -92,8 +94,10 @@ Response *HttpParser::parseResponse(const char *msg, const size_t len) {
     remainParsed.erase(remainParsed.begin(), remainParsed.begin() + consumed);
   }
   if (responseParser.is_done()) {
-    if(!remainParsed.empty()){
-      throw std::invalid_argument("500|ERROR The Content-Length of response from origin server is not match with body size");
+    if (!remainParsed.empty()) {
+      throw std::invalid_argument(
+          "500|ERROR The Content-Length of response from origin server is not "
+          "match with body size");
     }
     return createResponse(responseParser.release());
   }
@@ -104,4 +108,35 @@ Response *HttpParser::parseResponse(const char *msg, const size_t len) {
     throw std::invalid_argument(errmsg);
   }
   return NULL;
+}
+
+bool HttpParser::checkHeaderFiledValid(
+    std::pair<std::string, std::string> &name_value) {
+  std::string name = name_value.first;
+  std::string value = name_value.second;
+  if (name == "date" || name == "last-modified") {
+    checkDateValid(value);
+  }else if(name == "expires"){
+    try{
+      checkDateValid(value);
+    }catch(std::invalid_argument& e){
+      return false;
+    }
+  }
+  return true;
+}
+
+void HttpParser::checkDateValid(std::string &date) {
+  size_t gmt = date.find("GMT");
+  if (gmt != std::string::npos) {
+    date.erase(gmt - 1, 4);
+  } else {
+    throw std::invalid_argument(
+        "500|ERROR Invalid date format received from origin server");
+  }
+  struct tm tm;
+  if (strptime(date.c_str(), "%a, %d %b %Y %H:%M:%S", &tm) == NULL) {
+    throw std::invalid_argument(
+        "500|ERROR Invalid date format received from origin server");
+  }
 }

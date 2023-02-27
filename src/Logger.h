@@ -12,7 +12,7 @@ private:
   Logger &operator=(const Logger &) = delete;
 
 private:
-  const std::string logFile = "proxy.log";
+  const std::string logFile = "/home/brandon/HTTP_Caching_Proxy/src/proxy.log";
   static std::ofstream out;
   std::mutex m;
 

@@ -26,6 +26,11 @@ private:
   http::parser<false, http::string_body> responseParser;
 
 private:
+
+  bool checkHeaderFiledValid(std::pair<std::string, std::string>& name_value);
+
+  void checkDateValid(std::string& date);
+
   /*
    * Add msg not been parsed in to remainParsed
    * @msg remained msg
@@ -53,7 +58,9 @@ private:
       ss << iter->value();
       name_value.second = ss.str();
       ss.str("");
-      header.insert(name_value);
+      if(checkHeaderFiledValid(name_value)){
+        header.insert(name_value);
+      }
     }
   }
   /*

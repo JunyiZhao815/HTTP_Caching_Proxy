@@ -1,21 +1,7 @@
 #include "GetMethod.h"
 
 void GetMethod::takeAction(HttpConnector &httpConnector, Request &request) {
-  // filter invalid field in get method
-  // filter(request);
 
-  // // send request to server
-  // httpConnector.sendRequest(&request);
-  // // receive response from server
-  // Response *response = httpConnector.receiveResponse();
-  // // send response to client
-  // try {
-  //   httpConnector.sendResponse(response);
-  // } catch (std::runtime_error &e) {
-  //   delete response;
-  //   throw;
-  // }
-  // delete response;
 }
 
 void GetMethod::filter(Request &request) {
@@ -32,6 +18,7 @@ void GetMethod::_expect() {
 void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
                            Cache &cache) {
   Response *response = NULL;
+  bool isResponseFromServer = false;
   Node *node = cache.getResponse(request, httpConnector.getClientId());
   if (node != NULL) {
     std::string curTime = cache.getCurrUTCtime();
@@ -47,6 +34,7 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
       return;
     }
   } else {
+    isResponseFromServer = true;
     Logger::getLogger().proxyLog(httpConnector.getClientId(), "not in cache");
     // send request to server
     Logger::getLogger().proxyLog(httpConnector.getClientId(), "Requesting \"" + request.getFirstLine() + "\" from " + request.getHost().first);
@@ -67,8 +55,13 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
     std::string logmsg = "Responding \"" + response->getFirstLine() + "\"";
     Logger::getLogger().proxyLog(httpConnector.getClientId(), logmsg);
   } catch (std::runtime_error &e) {
-    delete response;
+    if(isResponseFromServer){
+      delete response;
+    }
     throw;
   }
-  // delete response;
+  if(isResponseFromServer){
+    delete response;
+  }
+  
 }

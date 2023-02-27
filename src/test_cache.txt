@@ -2,12 +2,15 @@ Method: GET
 
 1. in cache: by clicking the same url twice
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:13:38 2023
+1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:49:49 2023
 1: NOTE trying to get response from cache
 1: not in cache
+1: Requesting "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from njrusmc.net
+1: Received "HTTP/1.1 200 OK" from njrusmc.net
 1: NOTE trying put response into cache
+1: cached, expires at Mon Feb 27 18:50:50 2023
 1: Responding "HTTP/1.1 200 OK"
-2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:13:40 2023
+2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:49:54 2023
 2: NOTE trying to get response from cache
 2: in cache, valid
 2: Responding "HTTP/1.1 200 OK"
@@ -17,13 +20,19 @@ Method: GET
 
 2. no-store: by clicking the same url twice
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:34:27 2023
+1: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:50:56 2023
 1: NOTE trying to get response from cache
 1: not in cache
+1: Requesting "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from njrusmc.net
+1: Received "HTTP/1.1 200 OK" from njrusmc.net
+1: not cacheable because no-store
 1: Responding "HTTP/1.1 200 OK"
-2: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:34:30 2023
+2: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:50:58 2023
 2: NOTE trying to get response from cache
 2: not in cache
+2: Requesting "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from njrusmc.net
+2: Received "HTTP/1.1 200 OK" from njrusmc.net
+2: not cacheable because no-store
 2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
 
@@ -34,18 +43,22 @@ Method: GET
             clicking the url again at the time that is out of expire time.
    etag
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:35:19 2023
+1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:51:56 2023
 1: NOTE trying to get response from cache
 1: not in cache
+1: Requesting "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from njrusmc.net
+1: Received "HTTP/1.1 200 OK" from njrusmc.net
 1: NOTE trying put response into cache
+1: cached, expires at Mon Feb 27 18:52:57 2023
 1: Responding "HTTP/1.1 200 OK"
-2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:36:46 2023
+2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:53:22 2023
 2: NOTE trying to get response from cache
-2: in cache, but expired at Mon Feb 27 04:36:20 2023
+2: in cache, but expired at Mon Feb 27 18:52:57 2023
 2: in cache, requires validation
 2: NOTE ETag: "05dbbd20d38dec7598e4ae3e255200ad"
-2: NOTE the status code is 304
-2: Responding HTTP/1.1 200 OK
+2: Requesting "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from njrusmc.net
+2: Received "HTTP/1.1 304 Not Modified" from njrusmc.net
+2: Responding HTTP/1.1 304 Not Modified
 2: NOTE finish revalidation
 ----------------------------------------------------------------------------------------------------
 
@@ -53,13 +66,19 @@ Method: GET
 
 4. private: by click the url whose response is private
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:38:09 2023
+1: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:56:29 2023
 1: NOTE trying to get response from cache
 1: not in cache
+1: Requesting "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from njrusmc.net
+1: Received "HTTP/1.1 200 OK" from njrusmc.net
+1: not cacheable because private
 1: Responding "HTTP/1.1 200 OK"
-2: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:38:12 2023
+2: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:56:32 2023
 2: NOTE trying to get response from cache
 2: not in cache
+2: Requesting "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from njrusmc.net
+2: Received "HTTP/1.1 200 OK" from njrusmc.net
+2: not cacheable because private
 2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
 
@@ -69,32 +88,46 @@ Method: GET
    setting the capacity to 3, which means most three response can be cached, 
    if there is a fourth response that wants to be caches, the first stored cache is removed.
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:40:56 2023
+1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:57:14 2023
 1: NOTE trying to get response from cache
 1: not in cache
+1: Requesting "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from njrusmc.net
+1: Received "HTTP/1.1 200 OK" from njrusmc.net
 1: NOTE trying put response into cache
+1: cached, expires at Mon Feb 27 18:58:15 2023
 1: Responding "HTTP/1.1 200 OK"
-2: "GET http://njrusmc.net/cache/zero128k_public3600.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:09 2023
+2: "GET http://njrusmc.net/cache/zero128k_public3600.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:57:21 2023
 2: NOTE trying to get response from cache
 2: not in cache
+2: Requesting "GET http://njrusmc.net/cache/zero128k_public3600.test HTTP/1.1" from njrusmc.net
+2: Received "HTTP/1.1 200 OK" from njrusmc.net
 2: NOTE trying put response into cache
+2: cached, expires at Mon Feb 27 19:57:22 2023
 2: Responding "HTTP/1.1 200 OK"
-3: "GET http://njrusmc.net/cache/rand128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:17 2023
+3: "GET http://njrusmc.net/cache/rand128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:57:28 2023
 3: NOTE trying to get response from cache
 3: not in cache
+3: Requesting "GET http://njrusmc.net/cache/rand128k_public60.test HTTP/1.1" from njrusmc.net
+3: Received "HTTP/1.1 200 OK" from njrusmc.net
 3: NOTE trying put response into cache
+3: cached, expires at Mon Feb 27 18:58:29 2023
 3: Responding "HTTP/1.1 200 OK"
-4: "GET http://njrusmc.net/cache/rand128k_public3600.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:22 2023
+4: "GET http://njrusmc.net/cache/rand128k_public3600.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:57:35 2023
 4: NOTE trying to get response from cache
 4: not in cache
+4: Requesting "GET http://njrusmc.net/cache/rand128k_public3600.test HTTP/1.1" from njrusmc.net
+4: Received "HTTP/1.1 200 OK" from njrusmc.net
 4: NOTE trying put response into cache
 4: NOTE Delete the first node because the current cache size is out of capacity
+4: cached, expires at Mon Feb 27 19:57:36 2023
 4: Responding "HTTP/1.1 200 OK"
-5: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:28 2023
+5: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:57:42 2023
 5: NOTE trying to get response from cache
 5: not in cache
+5: Requesting "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from njrusmc.net
+5: Received "HTTP/1.1 200 OK" from njrusmc.net
 5: NOTE trying put response into cache
 5: NOTE Delete the first node because the current cache size is out of capacity
+5: cached, expires at Mon Feb 27 18:58:42 2023
 5: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
-
