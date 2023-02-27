@@ -87,7 +87,7 @@ public:
   send the response to the client, do not use it because it is already inside of
   revalidation();
   */
-  void respond_to_client(Response response, Response response_log, int user_id, HttpConnector& httpConnector);
+  void respond_to_client(Response response, int user_id, HttpConnector& httpConnector);
 
   /*
   check if the current response is cacheable
