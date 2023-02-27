@@ -34,7 +34,7 @@ void daemonize() {
 int main() {
   daemonize();
 
-  Cache cache(3, 0);
+  Cache cache(5, 0);
   HttpProxy httpProxy(cache);
   httpProxy.init("12345");
   httpProxy.multiThread();

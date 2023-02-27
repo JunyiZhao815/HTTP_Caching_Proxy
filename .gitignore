@@ -7,3 +7,7 @@ recover
 alltest
 
 proxy.log
+
+http_proxy
+
+test/
