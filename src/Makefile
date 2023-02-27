@@ -1,5 +1,5 @@
 CC=g++
-CFLAGS=-std=c++11 -ggdb3 -pthread -pedantic -Wall -pthread
+CFLAGS=-std=c++11 -pthread
 
 http_proxy:
 	${CC} ${CFLAGS} -o http_proxy *.cpp
