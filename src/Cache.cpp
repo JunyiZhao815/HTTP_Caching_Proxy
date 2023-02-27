@@ -247,7 +247,8 @@ void Cache::check_validation(Request request, Response response, int user_id,
     // response_to_send.setReason(newResponse->getReason());
     // response_to_send.setStatus(newResponse->getStatus());
     // respond_to_client(response_to_send, user_id, httpConnector);
-    respond_to_client(response_to_send, user_id, httpConnector);
+
+    respond_to_client(response_to_send, *newResponse, user_id, httpConnector);
 
   } else if (newResponse->getStatusCode() == "200") {
     std::cout << "code = 200" << std::endl;
@@ -274,13 +275,13 @@ void Cache::check_validation(Request request, Response response, int user_id,
                                                   newResponse->getCacheable());
       }
     }
-    respond_to_client(*newResponse, user_id, httpConnector);
+    respond_to_client(*newResponse, *newResponse, user_id, httpConnector);
   }
 }
 
-void Cache::respond_to_client(Response response, int user_id, HttpConnector& httpConnector) {
+void Cache::respond_to_client(Response response, Response response_log, int user_id, HttpConnector& httpConnector) {
   httpConnector.sendMessage(response, true);
-  std::string first = response.getFirstLine();
+  std::string first = response_log.getFirstLine();
   Logger::getLogger().proxyLog(user_id, "Responding " + first);
 }
 
