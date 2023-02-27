@@ -2,7 +2,6 @@
 #define __HTTP_CONNECTOR_H__
 #include "HttpParser.h"
 #include "TcpConnector.h"
-#define DEBUG
 
 class HttpConnector {
 private:

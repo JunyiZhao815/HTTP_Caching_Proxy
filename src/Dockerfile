@@ -10,4 +10,4 @@ COPY . .
 
 RUN chmod +x /http_proxy/main_run.sh
 
-EXPOSE 4000
+EXPOSE 12345

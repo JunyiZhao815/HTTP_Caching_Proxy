@@ -1,4 +1,4 @@
-Method: GET
+Cache Test
 
 1. in cache: by clicking the same url twice
 ----------------------------------------------------------------------------------------------------
@@ -15,8 +15,6 @@ Method: GET
 2: in cache, valid
 2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
-
-
 
 2. no-store: by clicking the same url twice
 ----------------------------------------------------------------------------------------------------
@@ -35,9 +33,6 @@ Method: GET
 2: not cacheable because no-store
 2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
-
-
-
 
 3. max-age: by clicking the same url twice, getting the expire time, then
             clicking the url again at the time that is out of expire time.
@@ -62,8 +57,6 @@ Method: GET
 2: NOTE finish revalidation
 ----------------------------------------------------------------------------------------------------
 
-
-
 4. private: by click the url whose response is private
 ----------------------------------------------------------------------------------------------------
 1: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 18:56:29 2023
@@ -81,8 +74,6 @@ Method: GET
 2: not cacheable because private
 2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
-
-
 
 5. replacement policy:
    setting the capacity to 3, which means most three response can be cached, 
@@ -130,4 +121,81 @@ Method: GET
 5: NOTE Delete the first node because the current cache size is out of capacity
 5: cached, expires at Mon Feb 27 18:58:42 2023
 5: Responding "HTTP/1.1 200 OK"
+----------------------------------------------------------------------------------------------------
+
+Get Test
+
+1. valid request: cat testfile/success.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: "GET http://detectportal.firefox.com/canonical.html HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 19:11:29 2023
+1: NOTE trying to get response from cache
+1: not in cache
+1: Requesting "GET http://detectportal.firefox.com/canonical.html HTTP/1.1" from detectportal.firefox.com
+1: Received "HTTP/1.1 200 OK" from detectportal.firefox.com
+1: NOTE trying put response into cache
+1: cached, but requires re-validation
+1: Responding "HTTP/1.1 200 OK"
+----------------------------------------------------------------------------------------------------
+
+2. bad method: cat testfile/bad_method.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: "MMM http://detectportal.firefox.com/canonical.html HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 19:10:30 2023
+1: Responding "HTTP/1.1 405 ERROR Method not support"
+----------------------------------------------------------------------------------------------------
+
+3. invalid field: cat testfile/invalid_field.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: Responding "HTTP/1.1 400 ERROR bad field"
+----------------------------------------------------------------------------------------------------
+
+4. not exist host: cat testfile/non_exist_host.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: "GET http://detectportal.fake.com/canonical.html HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 19:14:09 2023
+1: Responding "HTTP/1.1 400 ERROR Cannot get address info for host"
+----------------------------------------------------------------------------------------------------
+
+5. content length error: cat testfile/content_length_error.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: Responding "HTTP/1.1 400 ERROR bad Content-Length"
+----------------------------------------------------------------------------------------------------
+
+6. message incomplete error: cat testfile/msg_incomplete.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: Responding "HTTP/1.1 408 ERROR Stop receive request due to timeout"
+----------------------------------------------------------------------------------------------------
+
+Post Test
+
+1. valid request: cat testfile/post_success.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: "POST http://httpbin.org/post HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 19:19:52 2023
+1: Requesting "POST http://httpbin.org/post HTTP/1.1" from httpbin.org
+1: Received "HTTP/1.1 200 OK" from httpbin.org
+1: Responding "HTTP/1.1 200 OK"
+----------------------------------------------------------------------------------------------------
+
+2. wrong content length: cat testfile/post_wrong_content_length.txt | netcat 127.0.0.1 12345
+----------------------------------------------------------------------------------------------------
+1: Responding "HTTP/1.1 400 ERROR Content-Length is not match with the body size"
+----------------------------------------------------------------------------------------------------
+
+Response Test
+run test server: python3 testfile/server.py
+
+1. incomplete response: wget 127.0.0.1:8000/in_complete_response -e http_proxy=127.0.0.1:12345
+----------------------------------------------------------------------------------------------------
+1: "GET http://127.0.0.1:8000/in_complete_response HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 19:24:42 2023
+1: NOTE trying to get response from cache
+1: not in cache
+1: Requesting "GET http://127.0.0.1:8000/in_complete_response HTTP/1.1" from 127.0.0.1
+1: Responding "HTTP/1.1 500 ERROR The Content-Length of response from origin server is not match with body size"
+----------------------------------------------------------------------------------------------------
+
+2. bad content length: wget 127.0.0.1:8000/bad_content_length -e http_proxy=127.0.0.1:12345
+----------------------------------------------------------------------------------------------------
+1: "GET http://127.0.0.1:8000/bad_content_length HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 19:27:14 2023
+1: NOTE trying to get response from cache
+1: not in cache
+1: Requesting "GET http://127.0.0.1:8000/bad_content_length HTTP/1.1" from 127.0.0.1
+1: Responding "HTTP/1.1 502 ERROR bad Content-Length"
 ----------------------------------------------------------------------------------------------------

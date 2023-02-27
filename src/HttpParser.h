@@ -1,6 +1,5 @@
 #ifndef __HTTP_PARSER_H__
 #define __HTTP_PARSER_H__
-#define DEBUG
 #include "Request.h"
 #include "Response.h"
 #include <boost/algorithm/string.hpp>

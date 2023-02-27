@@ -1,3 +1,4 @@
+
 #include "HttpProxy.h"
 
 void daemonize() {
@@ -31,10 +32,10 @@ void daemonize() {
 }
 
 int main() {
-  // daemonize();
+  daemonize();
 
   Cache cache(3, 0);
   HttpProxy httpProxy(cache);
-  httpProxy.init("4000");
+  httpProxy.init("12345");
   httpProxy.multiThread();
 }

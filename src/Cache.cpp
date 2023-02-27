@@ -139,7 +139,7 @@ bool Cache::isFresh(Request request, int user_id) {
   Response response_old = response_node->response;
   std::string cache_control = response_old.getCacheControl();
   if (cache_control == "") {
-    std::cout << "no cache_control" << std::endl;
+    //std::cout << "no cache_control" << std::endl;
     return false;
   } else {
     std::string max_age = response_old.getMaxAge();
@@ -153,11 +153,11 @@ bool Cache::isFresh(Request request, int user_id) {
     // std::cout << "current_age is:" << current_age << std::endl;
 
     if (freshness_lifetime > current_age) {
-      std::cout << "it is fresh" << std::endl;
+      //std::cout << "it is fresh" << std::endl;
       Logger::getLogger().proxyLog(user_id, "in cache, valid");
       return true;
     } else {
-      std::cout << "it is not fresh" << std::endl;
+      //std::cout << "it is not fresh" << std::endl;
       print_expire(user_id, response_old, "in cache, but expired at ");
       Logger::getLogger().proxyLog(user_id,"in cache, requires validation");
       return false;
@@ -200,14 +200,14 @@ void Cache::revalidation(int user_id, Request request, Response response, HttpCo
   std::string lastModified = response.getLastModified();
   // 1. Sending a Validation Request
   if (etag != "") {
-    std::cout << "etag" << std::endl;
+    //std::cout << "etag" << std::endl;
     check_validation(request, response, user_id, "If-None-Match", etag, httpConnector);
   } else if (lastModified != "") {
-    std::cout << "last modified" << std::endl;
+    //std::cout << "last modified" << std::endl;
     check_validation(request, response, user_id, "If-Modified-Since",
                      lastModified, httpConnector);
   } else {
-    std::cout << "else, resend" << std::endl;
+    //std::cout << "else, resend" << std::endl;
     check_validation(request, response, user_id, "", "", httpConnector);
   }
   Logger::getLogger().proxyLog(user_id,"NOTE finish revalidation");
@@ -228,7 +228,7 @@ void Cache::check_validation(Request request, Response response, int user_id,
   if (tag != "") {
     newRequest.addHeaderField(tag, value);
   }
-  std::cout << newRequest << std::endl;
+  //std::cout << newRequest << std::endl;
 
   // send the request to the server
   Logger::getLogger().proxyLog(httpConnector.getClientId(), "Requesting \"" + request.getFirstLine() + "\" from " + newRequest.getHost().first);
@@ -238,10 +238,10 @@ void Cache::check_validation(Request request, Response response, int user_id,
       httpConnector.receiveResponse(); // receive the new response from the server, and check
   Logger::getLogger().proxyLog(httpConnector.getClientId(), "Received \"" + newResponse->getFirstLine() + "\" from " + newRequest.getHost().first);
   
-  std::cout <<"code is: "<< newResponse->getStatusCode() << std::endl;
+  //std::cout <<"code is: "<< newResponse->getStatusCode() << std::endl;
   if (newResponse->getStatusCode() == "304") {
     // respond from cache
-    std::cout << "code = 304" << std::endl;
+    //std::cout << "code = 304" << std::endl;
     Response response_to_send = response;
     // response_to_send.setReason(newResponse->getReason());
     // response_to_send.setStatus(newResponse->getStatus());
@@ -252,7 +252,7 @@ void Cache::check_validation(Request request, Response response, int user_id,
     // respond_to_client(response_to_send, user_id, httpConnector);
 
   } else if (newResponse->getStatusCode() == "200") {
-    std::cout << "code = 200" << std::endl;
+    //std::cout << "code = 200" << std::endl;
     // If the new response is cacheable
     if (newResponse->getCacheable() == "yes") {
       // Update response
@@ -307,7 +307,7 @@ void Cache::log_cacheable(Response& response, int user_id){
   if (response.getCacheable() == "yes") {
       if (response.getCacheControl() != "") {
         if (response.getCacheControl().find("must-revalidate") != std::string::npos) {
-          std:: cout << "it is: "<<response.getCacheControl().find("must-revalidate") << std::endl;
+          //std:: cout << "it is: "<<response.getCacheControl().find("must-revalidate") << std::endl;
           Logger::getLogger().proxyLog(user_id, "cached, but requires re-validation");
         } else {
           print_expire(user_id, response, "cached, expires at ");
