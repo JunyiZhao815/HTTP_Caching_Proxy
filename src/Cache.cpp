@@ -192,20 +192,23 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
     time_t date_age = convert_string2timet(date);
     time_t expire_age = date_age + max_age_int + 3600;
     struct tm *exp = gmtime(&expire_age);
-    const char *expire_time_act = asctime(exp);    
-    Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
+    std::string expire_time_act = asctime(exp); 
+    expire_time_act.pop_back();
+    Logger::getLogger().proxyLog(user_id, words + expire_time_act);
   } else if (expires != "") {
     time_t expire_time = convert_string2timet(expires);
     struct tm *exp = gmtime(&expire_time);
-    const char *expire_time_act = asctime(exp);    
-    Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
+    std::string expire_time_act = asctime(exp); 
+    expire_time_act.pop_back();
+    Logger::getLogger().proxyLog(user_id, words + expire_time_act);
   } else if (last_modified != "") {
     time_t date_age = convert_string2timet(date) + 3600;
     time_t last_modified_age = convert_string2timet(last_modified);
     time_t exp_age = time(NULL) + difftime(date_age, last_modified_age) / 10;
     struct tm *exp = gmtime(&exp_age);
-    const char *expire_time_act = asctime(exp);
-    Logger::getLogger().proxyLog(user_id, words + std::string(expire_time_act));
+    std::string expire_time_act = asctime(exp); 
+    expire_time_act.pop_back();
+    Logger::getLogger().proxyLog(user_id, words + expire_time_act);
   }
 }
 

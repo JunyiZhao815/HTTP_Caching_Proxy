@@ -30,6 +30,7 @@ Method: GET
 
 3. max-age: by clicking the same url twice, getting the expire time, then
             clicking the url again at the time that is out of expire time.
+   etag
 ----------------------------------------------------------------------------------------------------
 1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 212.213.214.215 @ Mon Feb 27 02:24:36 2023
 1: NOTE trying to get response from cache
@@ -40,7 +41,6 @@ Method: GET
 2: NOTE trying to get response from cache
 2: in cache, valid
 2: in cache, but expired at Mon Feb 27 02:25:37 2023
-
 3: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:09 2023
 4: "CONNECT push.services.mozilla.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:09 2023
 5: "CONNECT firefox.settings.services.mozilla.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:09 2023
