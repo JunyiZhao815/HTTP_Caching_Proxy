@@ -2,26 +2,29 @@ Method: GET
 
 1. in cache: by clicking the same url twice
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 212.213.214.215 @ Mon Feb 27 02:20:30 2023
+1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:13:38 2023
 1: NOTE trying to get response from cache
 1: not in cache
 1: NOTE trying put response into cache
-2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:20:30 2023
+1: Responding "HTTP/1.1 200 OK"
+2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:13:40 2023
 2: NOTE trying to get response from cache
 2: in cache, valid
-2: in cache, but expired at Mon Feb 27 02:21:31 2023
+2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
 
 
 
 2. no-store: by clicking the same url twice
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 212.213.214.215 @ Mon Feb 27 02:22:43 2023
+1: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:34:27 2023
 1: NOTE trying to get response from cache
 1: not in cache
-2: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:22:45 2023
+1: Responding "HTTP/1.1 200 OK"
+2: "GET http://njrusmc.net/cache/zero128k_nostore.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:34:30 2023
 2: NOTE trying to get response from cache
 2: not in cache
+2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
 
 
@@ -31,54 +34,33 @@ Method: GET
             clicking the url again at the time that is out of expire time.
    etag
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 212.213.214.215 @ Mon Feb 27 02:24:36 2023
+1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:35:19 2023
 1: NOTE trying to get response from cache
 1: not in cache
 1: NOTE trying put response into cache
-2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:24:38 2023
+1: Responding "HTTP/1.1 200 OK"
+2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:36:46 2023
 2: NOTE trying to get response from cache
-2: in cache, valid
-2: in cache, but expired at Mon Feb 27 02:25:37 2023
-3: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:09 2023
-4: "CONNECT push.services.mozilla.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:09 2023
-5: "CONNECT firefox.settings.services.mozilla.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:09 2023
-6: "CONNECT content-signature-2.cdn.mozilla.net:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:10 2023
-7: "POST http://r3.o.lencr.org/ HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:10 2023
-3: Tunnel closed
-4: Tunnel closed
-5: Tunnel closed
-6: Tunnel closed
-8: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:24 2023
-9: "CONNECT push.services.mozilla.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:24 2023
-10: "CONNECT firefox.settings.services.mozilla.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:25 2023
-8: Tunnel closed
-9: Tunnel closed
-10: Tunnel closed
-11: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:39 2023
-12: "CONNECT push.services.mozilla.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:40 2023
-13: NOTE User agent closed connection
-11: Tunnel closed
-14: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:50 2023
-12: Tunnel closed
-14: NOTE trying to get response from cache
-14: in cache, requires validation
-14: NOTE ETag: "05dbbd20d38dec7598e4ae3e255200ad"
-14: NOTE the status code is 304
-14: Responding HTTP/1.1 200 OK
-14: NOTE finish revalidation
+2: in cache, but expired at Mon Feb 27 04:36:20 2023
+2: in cache, requires validation
+2: NOTE ETag: "05dbbd20d38dec7598e4ae3e255200ad"
+2: NOTE the status code is 304
+2: Responding HTTP/1.1 200 OK
+2: NOTE finish revalidation
 ----------------------------------------------------------------------------------------------------
 
 
 
 4. private: by click the url whose response is private
 ----------------------------------------------------------------------------------------------------
-1: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 212.213.214.215 @ Mon Feb 27 02:41:17 2023
+1: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:38:09 2023
 1: NOTE trying to get response from cache
 1: not in cache
-2: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:41:18 2023
-3: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:41:20 2023
-3: NOTE trying to get response from cache
-3: not in cache
+1: Responding "HTTP/1.1 200 OK"
+2: "GET http://njrusmc.net/cache/zero128k_private60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:38:12 2023
+2: NOTE trying to get response from cache
+2: not in cache
+2: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
 
 
@@ -87,28 +69,32 @@ Method: GET
    setting the capacity to 3, which means most three response can be cached, 
    if there is a fourth response that wants to be caches, the first stored cache is removed.
 ----------------------------------------------------------------------------------------------------
-2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:51 2023
-1: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 212.213.214.215 @ Mon Feb 27 02:46:51 2023
+1: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:40:56 2023
+1: NOTE trying to get response from cache
+1: not in cache
+1: NOTE trying put response into cache
+1: Responding "HTTP/1.1 200 OK"
+2: "GET http://njrusmc.net/cache/zero128k_public3600.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:09 2023
 2: NOTE trying to get response from cache
 2: not in cache
 2: NOTE trying put response into cache
-3: "GET http://njrusmc.net/cache/zero128k_public3600.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:52 2023
+2: Responding "HTTP/1.1 200 OK"
+3: "GET http://njrusmc.net/cache/rand128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:17 2023
 3: NOTE trying to get response from cache
 3: not in cache
 3: NOTE trying put response into cache
-4: "GET http://njrusmc.net/cache/rand128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:53 2023
+3: Responding "HTTP/1.1 200 OK"
+4: "GET http://njrusmc.net/cache/rand128k_public3600.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:22 2023
 4: NOTE trying to get response from cache
 4: not in cache
 4: NOTE trying put response into cache
-5: "GET http://njrusmc.net/cache/rand128k_public3600.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:54 2023
+4: NOTE Delete the first node because the current cache size is out of capacity
+4: Responding "HTTP/1.1 200 OK"
+5: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 0.0.0.0 @ Mon Feb 27 04:41:28 2023
 5: NOTE trying to get response from cache
 5: not in cache
 5: NOTE trying put response into cache
 5: NOTE Delete the first node because the current cache size is out of capacity
-6: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:46:56 2023
-6: NOTE trying to get response from cache
-6: not in cache
-6: NOTE trying put response into cache
-6: NOTE Delete the first node because the current cache size is out of capacity
+5: Responding "HTTP/1.1 200 OK"
 ----------------------------------------------------------------------------------------------------
 

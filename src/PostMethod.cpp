@@ -10,6 +10,8 @@ void PostMethod::takeAction(HttpConnector &httpConnector, Request &request) {
   // send response to client
   try{
     httpConnector.sendResponse(response);
+    std::string logmsg = "Responding \"" + response->getFirstLine() + "\"";
+    Logger::getLogger().proxyLog(httpConnector.getClientId(), logmsg);
   }catch(std::runtime_error& e){
     delete response;
     throw;

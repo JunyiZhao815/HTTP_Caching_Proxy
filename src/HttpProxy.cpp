@@ -70,7 +70,7 @@ void HttpProxy::_exec(int client_socket_fd, int client_id) {
     std::string reason;
     parseInvalidArgExp(e.what(), status_code, reason);
     sendErrorStatus(status_code, reason, httpConnector);
-    Logger::getLogger().proxyLog(client_id, reason);
+    //Logger::getLogger().proxyLog(client_id, reason);
   }
 }
 
@@ -96,6 +96,7 @@ void HttpProxy::sendErrorStatus(const std::string &status_code,
   ResponseFactory factory;
   Response response = factory.create_4xx_response(status_code, reason);
   httpConnector.sendResponse(&response);
+  Logger::getLogger().proxyLog(httpConnector.getClientId(), "Responding \"" + response.getFirstLine() + "\"");
 }
 
 void HttpProxy::noneMultiThread() {
