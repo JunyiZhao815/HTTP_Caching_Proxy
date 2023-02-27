@@ -25,6 +25,8 @@ class Cache {
 
 private:
   void print_expire(int user_id, Response response, std::string words);
+public:
+  void log_cacheable(Response& response, int user_id);
 
 public:
   // Here I use First In First Out(FIFO) to implement the replacement policy

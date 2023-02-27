@@ -31,13 +31,7 @@ void GetMethod::_expect() {
 
 void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
                            Cache &cache) {
-  //   Logger::getLogger().proxyLog(0, "NOTE trying put response into cache 0");
-  // filter(request);
-  //   Logger::getLogger().proxyLog(1, "NOTE trying put response into cache 1");
-
   Response *response = NULL;
-  // std::cout << "0" << std::endl;
-
   Node *node = cache.getResponse(request, httpConnector.getClientId());
   if (node != NULL) {
     std::string curTime = cache.getCurrUTCtime();
@@ -45,52 +39,36 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
     strptime(curTime.c_str(), "%a %b %d %T %Y", &tm);
     time_t t = mktime(&tm);
     node->response.setFirstRequestTime(t - 14400);
-    // std::cout << "curr time is : " << t - 14400 << std::endl;
     if (cache.isFresh(request, httpConnector.getClientId())) {
-      // std::cout << "1" << std::endl;
       response = &(node->response);
-      // std::cout << "2" << std::endl;
     } else {
-      // std::cout << "7" << std::endl;
-
       cache.revalidation(httpConnector.getClientId(), request, node->response,
                          httpConnector);
-      // std::cout << "8" << std::endl;
-
       return;
     }
   } else {
     Logger::getLogger().proxyLog(httpConnector.getClientId(), "not in cache");
     // send request to server
-    // std::cout << "9" << std::endl;
-
+    Logger::getLogger().proxyLog(httpConnector.getClientId(), "Requesting \"" + request.getFirstLine() + "\" from " + request.getHost().first);
     httpConnector.sendRequest(&request);
 
     // receive response from server
     response = httpConnector.receiveResponse();
+    Logger::getLogger().proxyLog(httpConnector.getClientId(), "Received \"" + response->getFirstLine() + "\" from " + request.getHost().first);
+    cache.log_cacheable(*response, httpConnector.getClientId());
     if (cache.isCacheable(*response)) {
-      // std::cout << "10" << std::endl;
-
       cache.putResponse(request, *response, httpConnector.getClientId());
-      // std::cout << "11" << std::endl;
     }
   }
 
   // send response to client
   try {
-    // std::cout << "3" << std::endl;
-
     httpConnector.sendResponse(response);
     std::string logmsg = "Responding \"" + response->getFirstLine() + "\"";
     Logger::getLogger().proxyLog(httpConnector.getClientId(), logmsg);
-    // std::cout << "4" << std::endl;
-
   } catch (std::runtime_error &e) {
     delete response;
     throw;
   }
-  // std::cout << "5" << std::endl;
-
   // delete response;
-  // std::cout << "6" << std::endl;
 }

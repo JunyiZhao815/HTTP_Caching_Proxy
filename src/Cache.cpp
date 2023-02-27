@@ -231,11 +231,13 @@ void Cache::check_validation(Request request, Response response, int user_id,
   std::cout << newRequest << std::endl;
 
   // send the request to the server
+  Logger::getLogger().proxyLog(httpConnector.getClientId(), "Requesting \"" + request.getFirstLine() + "\" from " + newRequest.getHost().first);
   httpConnector.sendRequest(&newRequest);
 
   Response *newResponse =
-      httpConnector.receiveResponse(); // receive the new response from the
-                                       // server, and check
+      httpConnector.receiveResponse(); // receive the new response from the server, and check
+  Logger::getLogger().proxyLog(httpConnector.getClientId(), "Received \"" + newResponse->getFirstLine() + "\" from " + newRequest.getHost().first);
+  
   std::cout <<"code is: "<< newResponse->getStatusCode() << std::endl;
   if (newResponse->getStatusCode() == "304") {
     // respond from cache
@@ -296,4 +298,24 @@ std::string Cache::getCurrUTCtime() {
   std::stringstream ss;
   ss << std::put_time(&utc_tm, "%a %b %d %T %Y");
   return ss.str();
+}
+
+void Cache::log_cacheable(Response& response, int user_id){
+  if (response.getCacheable() == "yes") {
+      if (response.getCacheControl() != "") {
+        if (response.getCacheControl().find("must-revalidate") != (long)(unsigned)-1) {
+          Logger::getLogger().proxyLog(user_id, "cached, but requires re-validation");
+        } else {
+          print_expire(user_id, response, "cached, expires at ");
+        }
+      }
+    } else {
+      if (response.getCacheable() == "") {
+        Logger::getLogger().proxyLog(
+            user_id, "not cacheable because cache-control tag is empty");
+      } else {
+        Logger::getLogger().proxyLog(user_id, "not cacheable because " +
+                                                  response.getCacheable());
+      }
+    }
 }
