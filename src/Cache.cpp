@@ -147,7 +147,8 @@ time_t get_freshness_lifetime(std::string max_age, std::string expires,
 
 // finish testing
 bool Cache::isFresh(Request request, int user_id) {
-  Node *response_node = this->getResponse(request, user_id);
+  std::string URI = request.getURI();
+  Node *response_node = map[URI];
   if (response_node == NULL) {
     std::cerr
         << "Cannot find the response you are trying to check freshing or not"

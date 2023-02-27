@@ -8,7 +8,6 @@ Method: GET
 1: NOTE trying put response into cache
 2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:20:30 2023
 2: NOTE trying to get response from cache
-2: NOTE trying to get response from cache
 2: in cache, valid
 2: in cache, but expired at Mon Feb 27 02:21:31 2023
 ----------------------------------------------------------------------------------------------------
@@ -38,7 +37,6 @@ Method: GET
 1: NOTE trying put response into cache
 2: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:24:38 2023
 2: NOTE trying to get response from cache
-2: NOTE trying to get response from cache
 2: in cache, valid
 2: in cache, but expired at Mon Feb 27 02:25:37 2023
 3: "CONNECT mozilla.cloudflare-dns.com:443 HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:09 2023
@@ -62,7 +60,6 @@ Method: GET
 11: Tunnel closed
 14: "GET http://njrusmc.net/cache/zero128k_public60.test HTTP/1.1" from 174.109.103.165 @ Mon Feb 27 02:25:50 2023
 12: Tunnel closed
-14: NOTE trying to get response from cache
 14: NOTE trying to get response from cache
 14: in cache, requires validation
 14: NOTE ETag: "05dbbd20d38dec7598e4ae3e255200ad"
