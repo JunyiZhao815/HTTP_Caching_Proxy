@@ -173,10 +173,10 @@ bool Cache::isFresh(Request request, int user_id) {
     if (freshness_lifetime > current_age) {
       std::cout << "it is fresh" << std::endl;
       Logger::getLogger().proxyLog(user_id, "in cache, valid");
-      print_expire(user_id, response_old, "in cache, but expired at ");
       return true;
     } else {
       std::cout << "it is not fresh" << std::endl;
+      print_expire(user_id, response_old, "in cache, but expired at ");
       Logger::getLogger().proxyLog(user_id,"in cache, requires validation");
       return false;
     }
