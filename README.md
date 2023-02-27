@@ -20,7 +20,3 @@ Requirements
 Resource
 --
 https://neat-iodine-05e.notion.site/ECE-568-Guide-1e5d5cfcfb694952acd74ae869f8cdd1
-
-Basic Class Diagram  
---  
-![http_proxy_class_diagram](https://user-images.githubusercontent.com/63096620/219905813-6e101223-b6de-4554-96a3-bf8fa944160f.png)
