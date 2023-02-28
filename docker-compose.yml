@@ -7,4 +7,5 @@ services:
       - '12345:12345'
     volumes:
       - ./logs:/var/log/erss
+      - /etc/localtime:/etc/localtime:ro
     command: /bin/sh -c "/http_proxy/main_run.sh"
