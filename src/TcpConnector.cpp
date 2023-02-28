@@ -117,7 +117,7 @@ void TcpConnector::sendMessage(const int sockfd, const void *msg,
 
 std::string TcpConnector::getIpByFd(int socket_fd){
   struct sockaddr_in sock_addr;
-  socklen_t len;
+  socklen_t len = sizeof(struct sockaddr_in);
   getpeername(socket_fd, (struct sockaddr*)&sock_addr, &len);
   return inet_ntoa(sock_addr.sin_addr);
 }
