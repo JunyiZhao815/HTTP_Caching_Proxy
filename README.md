@@ -20,4 +20,3 @@ Requirements
 Resource
 --
 https://neat-iodine-05e.notion.site/ECE-568-Guide-1e5d5cfcfb694952acd74ae869f8cdd1
- 
