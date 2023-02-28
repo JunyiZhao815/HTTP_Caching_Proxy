@@ -82,12 +82,12 @@ time_t convert_string2timet(std::string time) {
   strptime(time.c_str(), "%a, %d %b %Y %H:%M:%S", &tm);
   time_t t = mktime(&tm);
   // std::cout << "The maketime is: " << t << std::endl;
-  return t - 18000;
+  return t - 14400;
 }
 
 time_t get_current_age(Response response) {
   time_t age_value = stoi(response.getAge());
-  time_t date_value = convert_string2timet(response.getDate()) + 3600;
+  time_t date_value = convert_string2timet(response.getDate());
   time_t response_time = date_value;
   time_t apparent_age =
       response_time - date_value < 0 ? 0 : response_time - date_value;
@@ -173,7 +173,8 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
   if (max_age != "") {
     time_t max_age_int = stoi(max_age);
     time_t date_age = convert_string2timet(date);
-    time_t expire_age = date_age + max_age_int + 3600;
+    time_t expire_age = date_age + max_age_int;
+    std::cout << "expire age is: " << expire_age << std::endl;
     struct tm *exp = gmtime(&expire_age);
     std::string expire_time_act = asctime(exp); 
     expire_time_act.pop_back();
@@ -185,7 +186,7 @@ void Cache::print_expire(int user_id, Response response, std::string words) {
     expire_time_act.pop_back();
     Logger::getLogger().proxyLog(user_id, words + expire_time_act);
   } else if (last_modified != "") {
-    time_t date_age = convert_string2timet(date) + 3600;
+    time_t date_age = convert_string2timet(date);
     time_t last_modified_age = convert_string2timet(last_modified);
     time_t exp_age = time(NULL) + difftime(date_age, last_modified_age) / 10;
     struct tm *exp = gmtime(&exp_age);

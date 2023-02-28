@@ -25,7 +25,7 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
     struct tm tm;
     strptime(curTime.c_str(), "%a %b %d %T %Y", &tm);
     time_t t = mktime(&tm);
-    node->response.setFirstRequestTime(t - 14400);
+    node->response.setFirstRequestTime(t);
     if (cache.isFresh(request, httpConnector.getClientId())) {
       response = &(node->response);
     } else {
