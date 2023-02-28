@@ -43,10 +43,14 @@ void GetMethod::takeAction(HttpConnector &httpConnector, Request &request,
     // receive response from server
     response = httpConnector.receiveResponse();
     Logger::getLogger().proxyLog(httpConnector.getClientId(), "Received \"" + response->getFirstLine() + "\" from " + request.getHost().first);
-    if (cache.isCacheable(*response)) {
-      cache.putResponse(request, *response, httpConnector.getClientId());
+    if(response->getContentLen() > 10000000){
+      Logger::getLogger().proxyLog(httpConnector.getClientId(), "not cacheable because the size of that response is larger than 10 MB");
+    }else{
+      if (cache.isCacheable(*response)) {
+        cache.putResponse(request, *response, httpConnector.getClientId());
+      }
+      cache.log_cacheable(*response, httpConnector.getClientId());
     }
-    cache.log_cacheable(*response, httpConnector.getClientId());
   }
 
   // send response to client
